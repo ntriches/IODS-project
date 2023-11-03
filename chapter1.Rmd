@@ -14,6 +14,8 @@
 
 Here is a link to my GitHub repository: <https://github.com/ntriches/IODS-project>
 
+[^1]: Doctoral Programme in Atmospheric Sciences at the University of Helsinki.
+
 ```{r}
 # This is a so-called "R chunk" where you can write R code. 
 # I don't have a code yet so I will leave this the way it is.
@@ -22,5 +24,5 @@ date()
 
 ```
 
-[^1]: Doctoral Programme in Atmospheric Sciences at the University of Helsinki.
+
 

@@ -1,13 +1,26 @@
 
 # About the project
 
-*Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you should use R Markdown syntax.*
+*This is a R Markdown file used for the "Introduction to Open Data Science" course at the University of Helsinki in 2023. The following lines are used to excercise the R Markdown syntax.*
+
+### not-so-random thoughts
+
+* I am feeling quite tired at the moment, it's Friday afternoon. 
+* In this course, I expect to learn a few things:
+   + using tidyverse as a modern tool for R (rather than R base)
+   + learn how to use GitHub since I have no experience with it
+   + learn how to verson-control RStudio projects
+* I saw the course in SISU and in my PhD programme (ATM-DP) [^1].
+
+Here is a link to my GitHub repository: <https://github.com/ntriches/IODS-project>
 
 ```{r}
-# This is a so-called "R chunk" where you can write R code.
+# This is a so-called "R chunk" where you can write R code. 
+# I don't have a code yet so I will leave this the way it is.
 
 date()
 
 ```
-The text continues here.
+
+[^1]: Doctoral Programme in Atmospheric Sciences at the University of Helsinki.
 

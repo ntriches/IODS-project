@@ -1,0 +1,2062 @@
+---
+title: "**Introduction to Open Data Science, Exercise set 1**"
+
+subtitle: "**R basics using the RHDS book**"
+
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock
+    toc: true
+    toc_depth: 2
+    number_section: false
+---
+
+This R Markdown sheet includes a quite large set of R code chunks taken from the RHDS book **R for Health Data Science** by Ewen Harrison and Riinu Pius (CRC Press, 2021), available online at <https://argoshare.is.ed.ac.uk/healthyr_book/>. The structure follows the structure of the book (chapters 2, 3, 4, 5, 6, and 8 and their sections and subsections).
+
+The goal is to get familiar with R and R Markdown (in a quite quick pace) using typical R functions for data wrangling, visualization, and analysis. You do not need to do very much (yet), mostly just read or browse the book while following and exploring the work flow in RStudio, activating the R functions and studying the output (results, statistics, graphics etc.) that will be created (including some tiny errors that are included on purpose). There are also some small exercises, where you are encouraged to write a bit of R code yourself (based on the hints given in the book). You may well skip those exercises.
+
+The rest of the Exercise sets on this IODS (Introduction to Open Data Science) course have a different, more interactive structure. They have their own logic and detailed instructions, as you will see from the next week onwards.
+
+------------------------------------------------------------------------
+
+# Chapter 1: Why we love R
+
+You should begin by reading (or browsing through) this chapter:
+
+<https://argoshare.is.ed.ac.uk/healthyr_book/why-we-love-r.html>
+
+**Note1:** On IODS course, we focus on writing the steps of the analysis in R Markdown, but we also use R scripts. Both ways of working are included in the RHDS book. Here, our focus is on the R Markdown (R scripts are a bit simpler).
+
+**Note2:** We have already copy-pasted the R codes for you in this R Markdown sheet, beginning from Chapter 2. We have also included the example datasets of RHDS book through our GitHub repository, so all the datasets of the book are easily accessible on the fly, without a need to download them separately.
+
+The following is the first example of an R code chunk, where you can activate R functions. Its contents have been copy-pasted from Section 1.7. Try now to activate the R "command" ("1001:1004") by putting the cursor on that line below, and pressing Ctrl+Enter (on Windows) or Cmd+Enter (on Mac)!
+
+```{r}
+# Now we're printing bigger numbers:
+1001:1004
+
+```
+
+As you see above, the results (in this case, the numbers 1001, 1002, 1003, and 1004) appear immediately below the R code chunk (preceded by the usual [1], which you will also get used to, very soon.)
+
+OK, as soon as you have read Chapter 1, you are ready to move on, to Chapter 2!
+
+------------------------------------------------------------------------
+
+# Chapter 2: R basics
+
+Again, the idea is that you read (or at least browse) the contents of the book while following the work flow (the R code chunks that have been created here for you).
+
+So, begin reading at <https://argoshare.is.ed.ac.uk/healthyr_book/r-basics.html>.
+
+As soon as you see R code in the book, look at your RStudio, in this R Markdown sheet. Activate the R functions one at a time and see what happens.
+
+Have fun! This will get you ready for the rest of the IODS course!
+
+## 2.1 Reading data into R
+
+**NOTE:** The function library(...) is used to call another R package to work. When there is a library(...) function involved (as there is in the code chunk below), you must be prepared to *install* the package (if you have not installed that before). You can do that in the RStudio "Packages" pane on the right, but also by using an R function install.packages("...") in this editor. In some cases (like just below), the install.packages("...") function is given as a comment to the library call, which is a *useful trick*: you can select (with mouse or arrow keys) the install.packages("...") and run it (by Ctrl+Enter / Cmd+Enter). It is NOT a good idea to leave the install.packages("...") function in the code, outside of the comment (similarly as the library, for example), as then the package would be installed unnecessarily often (which takes time and other resources). Usually, installing is done once, and then you can use the package (with library(...)) as many times as you need to.
+
+**So try this below:** select (with mouse or arrow keys) the install.packages("...") and run it (by Ctrl+Enter / Cmd+Enter). It will install the tidyverse package collection that we will need all the time.
+
+After an successful installation (that might take some time), continue by activating the actual functions, beginning from library(...) and then finally reading the data in:
+
+```{r}
+library(tidyverse) # install.packages("tidyverse")
+example_data <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/example_data.csv")
+View(example_data) # look at the data (and then close that view to return to the editor)
+```
+
+### 2.1.2 Reading in the Global Burden of Disease example dataset
+
+```{r}
+library(tidyverse)
+gbd_short <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/global_burden_disease_cause-year.csv")
+View(gbd_short)
+```
+
+## 2.2 Variable types and why we care
+
+**Note:** Some outputs may differ a bit from the book, because R is constantly developed further. One example is the following. (We have modified the code chunk a bit to reveal the outputs shown in the book.)
+
+```{r}
+library(tidyverse)
+typesdata <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/typesdata.csv")
+spec(typesdata)
+typesdata
+```
+
+```{r}
+typesdata_faulty <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/typesdata_faulty.csv")
+spec(typesdata_faulty)
+typesdata_faulty
+```
+
+### 2.2.1 Numeric variables (continuous)
+
+```{r}
+typesdata$measurement %>% mean()
+measurement_mean <- typesdata$measurement %>% mean()
+
+measurement_mean == 3.333333
+
+(0.10 + 0.05) == 0.15
+
+library(tidyverse)
+near(0.10+0.05, 0.15)
+
+near(measurement_mean, 3.333333, 0.000001)
+```
+
+### 2.2.2 Character variables
+
+```{r}
+library(tidyverse)
+typesdata %>%
+  count(group)
+
+typesdata %>%
+  count(group, sort = TRUE)
+
+# all ids are unique:
+typesdata %>% 
+  count(id, sort = TRUE)
+
+# we add in a duplicate row where id = ID3,
+# then count again:
+typesdata %>% 
+  add_row(id = "ID3") %>% 
+  count(id, sort = TRUE)
+```
+
+### 2.2.3 Factor variables (categorical)
+
+(just read - more about this topic will follow later...)
+
+### 2.2.4 Date/time variables
+
+Remember to install the lubridate package first...
+
+```{r}
+library(lubridate) # install.packages("lubridate") # makes working with dates easier
+current_datetime <- Sys.time()
+current_datetime
+
+my_datetime <- "2020-12-01 12:00"
+my_datetime
+
+# error that is explained in the book... (you may put '#' in front of it)
+my_datetime - current_datetime
+
+current_datetime %>% class()
+my_datetime %>% class()
+```
+
+2.2.4 continued...
+
+```{r}
+my_datetime_converted <- ymd_hm(my_datetime)
+my_datetime_converted
+
+# now it will work:
+my_datetime_converted - current_datetime
+
+my_datesdiff <- my_datetime_converted - current_datetime
+my_datesdiff %>% class()
+
+ymd_hm("2021-01-02 12:00") + my_datesdiff
+
+# another error challenge here... (again you may put '#' in front of that afterwards)
+560/my_datesdiff
+560/as.numeric(my_datesdiff)
+```
+
+2.2.4 continued...
+
+```{r}
+parse_date_time("12:34 07/Jan'20", "%H:%M %d/%b'%y")
+
+Sys.time()
+Sys.time() %>% format("%H:%M on %B-%d (%Y)")
+
+Sys.time() %>% format("Happy days, the current time is %H:%M %B-%d (%Y)!")
+```
+
+## 2.3 Objects and functions
+
+```{r}
+library(tidyverse)
+mydata <- tibble(
+  id   = 1:4,
+  sex  = c("Male", "Female", "Female", "Male"),
+  var1 = c(4, 1, 2, 3),
+  var2 = c(NA, 4, 5, NA),
+  var3 = c(2, 1, NA, NA)
+)
+```
+
+### 2.3.1 data frame/tibble
+
+### 2.3.2 Naming objects
+
+```{r}
+mydata
+```
+
+### 2.3.3 Function and its arguments
+
+```{r}
+mydata$var1
+
+mean(mydata$var1)
+
+mean(mydata$var2)
+
+mean(mydata$sex)
+
+mean(mydata$var2, na.rm = TRUE)
+
+Sys.time()
+```
+
+### 2.3.4 Working with objects
+
+```{r}
+a <- 103
+
+a
+
+seq(15, 30)
+
+example_sequence <- seq(15, 30)
+
+example_sequence <- example_sequence/2
+
+example_sequence
+```
+
+### 2.3.5 \<- and =
+
+```{r}
+mean_result <- mean(mydata$var2, na.rm = TRUE)
+```
+
+### 2.3.6 Recap: object, function, input, argument
+
+## 2.4 Pipe - %\>%
+
+```{r}
+library(tidyverse)
+mydata$var1 %>% mean()
+
+mean_result <- mydata$var1 %>% mean()
+```
+
+### 2.4.1 Using . to direct the pipe
+
+```{r}
+mydata %>% 
+  lm(var1~var2, data = .)
+```
+
+## 2.5 Operators for filtering data
+
+```{r}
+gbd_short %>% 
+  filter(year < 1995)
+
+gbd_short %>% 
+  filter(year <= 1995)
+
+gbd_short %>% 
+  filter(year == 1995)
+```
+
+2.5 continued...
+
+```{r}
+# do you see what is wrong here? (you may fix it or hide it with '#' afterwards)
+gbd_short %>% 
+ filter(year = 1995)
+
+gbd_short %>% 
+  filter(year == 1995 | year == 2017)
+
+gbd_short %>% 
+  filter(year == max(year) | year == min(year))
+```
+
+### 2.5.1 Worked examples
+
+```{r}
+mydata_year2000 <- gbd_short %>% 
+  filter(year == 2000)
+
+mydata_year2000
+```
+
+2.5.1 continued...
+
+```{r}
+new_data_selection <- gbd_short %>% 
+  filter((year == 1990 | year == 2013) & cause == "Communicable diseases")
+
+new_data_selection
+```
+
+2.5.1 continued...
+
+```{r}
+# Or we can get rid of the extra brackets around the years
+# by moving cause into a new filter on a new line:
+
+new_data_selection <- gbd_short %>% 
+  filter(year == 1990 | year == 2013) %>% 
+  filter(cause == "Communicable diseases")
+
+new_data_selection
+```
+
+2.5.1 continued...
+
+```{r}
+  
+# Or even better, we can include both in one filter() call, as all
+# separate conditions are by default joined with "&":
+
+new_data_selection <- gbd_short %>% 
+  filter(year == 1990 | year == 2013,
+         cause == "Communicable diseases")
+
+new_data_selection
+```
+
+## 2.6 The combine function: c()
+
+```{r}
+gbd_short$cause %>% unique()
+
+gbd_short %>% 
+  # also filtering for a single year to keep the result concise
+  filter(year == 1990) %>% 
+  filter(cause == "Communicable diseases" | cause == "Non-communicable diseases")
+
+gbd_short %>% 
+  filter(year == 1990) %>% 
+  filter(cause %in% c("Communicable diseases", "Non-communicable diseases"))
+```
+
+## 2.7 Missing values (NAs) and filters
+
+```{r}
+mydata
+
+mydata %>% 
+  filter(is.na(var2))
+
+mydata %>% 
+  filter(!is.na(var2))
+
+mydata %>% 
+  filter(var2 != 5)
+
+mydata %>% 
+  filter(var2 != 5 | is.na(var2))
+```
+
+2.7 continued...
+
+```{r}
+subset1 <- mydata %>% 
+  filter(var2 == 5)
+
+subset2 <- mydata %>% 
+  filter(! var2 == 5)
+
+subset1; subset2
+
+nrow(mydata)
+nrow(subset1)
+nrow(subset2)
+
+nrow(subset1) + nrow(subset2) == nrow(mydata)
+
+subset3 <- mydata %>% 
+  filter(is.na(var2))
+
+nrow(subset1) + nrow(subset2) + nrow(subset3) == nrow(mydata)
+```
+
+## 2.8 Creating new columns - mutate()
+
+```{r}
+typesdata
+
+typesdata$measurement
+
+typesdata$measurement/2
+
+typesdata %>% 
+  mutate(measurement/2)
+
+typesdata %>% 
+  mutate(measurement_half = measurement/2)
+```
+
+2.8 continued...
+
+```{r}
+mydata$`Nasty column name`
+
+# or
+
+mydata %>% 
+ select(`Nasty column name`)
+```
+
+2.8 continued...
+
+```{r}
+typesdata_modified <- typesdata %>% 
+  mutate(measurement_half = measurement/2)
+
+typesdata_modified
+```
+
+2.8 continued...
+
+```{r}
+library(lubridate)
+typesdata %>% 
+  mutate(reference_date   = ymd_hm("2020-01-01 12:00"),
+         dates_difference = reference_date - date) %>% 
+  select(date, reference_date, dates_difference)
+
+typesdata %>% 
+  mutate(mean_measurement = mean(measurement))
+
+typesdata %>% 
+  mutate(mean_measurement     = mean(measurement)) %>% 
+  mutate(measurement_relative = measurement/mean_measurement) %>% 
+  select(matches("measurement"))
+
+```
+
+### 2.8.1 Worked example/exercise
+
+```{r}
+typesdata %>% 
+  mutate(reference_date   = ymd_hm("2020-01-01 12:00"),
+         dates_difference = reference_date - date) %>% 
+  mutate(dates_difference = round(dates_difference)) %>% 
+  select(matches("date"))
+```
+
+## 2.9 Conditional calculations - if_else()
+
+```{r}
+typesdata %>% 
+  mutate(above_threshold = if_else(measurement > 3,
+                                   "Above three",
+                                   "Below three"))
+```
+
+## 2.10 Create labels - paste()
+
+```{r}
+typesdata %>% 
+  mutate(plot_label = paste(id,
+                            "was last measured at", date,
+                            ", and the value was",    measurement)) %>% 
+  select(plot_label)
+
+pastedata <- tibble(year  = c(2007, 2008, 2009),
+                   month = c("Jan", "Feb", "March"),
+                   day   = c(1, 2, 3))
+pastedata
+```
+
+2.10 continued...
+
+```{r}
+pastedata %>% 
+  mutate(date = paste(day, month, year, sep = "-"))
+
+library(lubridate)
+
+pastedata %>% 
+  mutate(date = paste(day, month, year, sep = "-")) %>% 
+  mutate(date = dmy(date))
+```
+
+## 2.11 Joining multiple datasets
+
+```{r}
+library(tidyverse)
+patientdata <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/patient_data.csv")
+patientdata
+
+labsdata <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/labs_data.csv")
+labsdata
+
+ full_join(patientdata, labsdata)
+
+inner_join(patientdata, labsdata)
+
+ left_join(patientdata, labsdata)
+
+right_join(patientdata, labsdata)
+```
+
+### 2.11.1 Further notes about joins
+
+```{r}
+patientdata_new <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/patient_data_updated.csv")
+patientdata_new
+
+bind_rows(patientdata, patientdata_new)
+
+labsdata_updated <- labsdata %>% 
+  add_row(id = 5, measurement = 2.49)
+labsdata_updated
+
+left_join(patientdata, labsdata_updated)
+```
+
+Well done! That was active reading of Chapter 2.
+
+Working will continue below with Chapter 3...
+
+------------------------------------------------------------------------
+
+# Chapter 3: Summarising data
+
+Continue reading at <https://argoshare.is.ed.ac.uk/healthyr_book/summarising-data.html> and working with the R code chunks.
+
+## 3.1 Get the data
+
+```{r}
+library(tidyverse)
+gbd_full <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/global_burden_disease_cause-year-sex-income.csv")
+
+# Creating a single-year tibble for printing and simple examples:
+gbd2017 <- gbd_full %>% 
+  filter(year == 2017)
+
+View(gbd2017)
+```
+
+## 3.2 Plot the data
+
+```{r}
+gbd2017 %>% 
+  # without the mutate(... = fct_relevel()) 
+  # the panels get ordered alphabetically
+  mutate(income = fct_relevel(income,
+                              "Low",
+                              "Lower-Middle",
+                              "Upper-Middle",
+                              "High")) %>% 
+  # defining the variables using ggplot(aes(...)):
+  ggplot(aes(x = sex, y = deaths_millions, fill = cause)) +
+  # type of geom to be used: column (that's a type of barplot):
+  geom_col(position = "dodge") +
+  # facets for the income groups:
+  facet_wrap(~income, ncol = 4) +
+  # move the legend to the top of the plot (default is "right"):
+  theme(legend.position = "top")
+
+```
+
+## 3.3 Aggregating: group_by(), summarise()
+
+```{r}
+gbd2017$deaths_millions %>% sum()
+
+gbd2017 %>% 
+  summarise(sum(deaths_millions))
+
+gbd2017 %>% 
+  group_by(cause) %>% 
+  summarise(sum(deaths_millions))
+
+gbd2017 %>% 
+  group_by(cause, sex) %>% 
+  summarise(sum(deaths_millions))
+```
+
+## 3.4 Add new columns: mutate()
+
+```{r}
+gbd2017 %>% 
+  group_by(cause, sex) %>% 
+  summarise(deaths_per_group = sum(deaths_millions)) %>% 
+  ungroup() %>% 
+  mutate(deaths_total = sum(deaths_per_group))
+```
+
+### 3.4.1 Percentages formatting: percent()
+
+```{r}
+# percent() function for formatting percentages come from library(scales)
+library(scales)
+gbd2017_summarised <- gbd2017 %>% 
+  group_by(cause, sex) %>% 
+  summarise(deaths_per_group = sum(deaths_millions)) %>% 
+  ungroup() %>% 
+  mutate(deaths_total    = sum(deaths_per_group),
+         deaths_relative = percent(deaths_per_group/deaths_total))
+gbd2017_summarised
+
+# using values from the first row as an example:
+round(100*4.91/55.74, 1) %>% paste0("%")
+
+gbd2017_summarised %>% 
+  mutate(deaths_relative = deaths_per_group/deaths_total)
+```
+
+## 3.5 summarise() vs mutate()
+
+```{r}
+gbd_summarised <- gbd2017 %>% 
+  group_by(cause, sex) %>% 
+  summarise(deaths_per_group = sum(deaths_millions)) %>% 
+  arrange(sex)
+
+gbd_summarised
+
+gbd_summarised_sex <- gbd_summarised %>% 
+  group_by(sex) %>% 
+  summarise(deaths_per_sex = sum(deaths_per_group))
+
+gbd_summarised_sex
+```
+
+3.5 continued...
+
+```{r}
+full_join(gbd_summarised, gbd_summarised_sex)
+
+gbd_summarised %>% 
+  group_by(sex) %>% 
+  mutate(deaths_per_sex = sum(deaths_per_group))
+
+gbd2017 %>% 
+  group_by(cause, sex) %>% 
+  summarise(deaths_per_group = sum(deaths_millions)) %>% 
+  group_by(sex) %>% 
+  mutate(deaths_per_sex  = sum(deaths_per_group),
+         sex_cause_perc = percent(deaths_per_group/deaths_per_sex)) %>% 
+  arrange(sex, deaths_per_group)
+```
+
+## 3.6 Common arithmetic functions - sum(), mean(), median(), etc.
+
+```{r}
+mynumbers <- c(1, 2, NA)
+sum(mynumbers)
+
+sum(mynumbers, na.rm = TRUE)
+```
+
+## 3.7 select() columns
+
+```{r}
+gbd_2rows <- gbd_full %>% 
+  slice(1:2)
+
+gbd_2rows
+
+gbd_2rows %>% 
+  select(cause, deaths_millions)
+
+gbd_2rows %>% 
+  select(cause, deaths = deaths_millions)
+
+gbd_2rows %>% 
+  rename(deaths = deaths_millions)
+
+gbd_2rows %>% 
+  select(year, sex, income, cause, deaths_millions)
+
+gbd_2rows %>% 
+  select(year, sex, everything())
+
+gbd_2rows %>% 
+  select(starts_with("deaths"))
+```
+
+## 3.8 Reshaping data - long vs wide format
+
+```{r}
+gbd_wide <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/global_burden_disease_wide-format.csv")
+gbd_long <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/global_burden_disease_cause-year-sex.csv")
+
+gbd_wide
+gbd_long
+```
+
+### 3.8.1 Pivot values from rows into columns (wider)
+
+```{r}
+gbd_long %>% 
+  pivot_wider(names_from = year, values_from = deaths_millions)
+
+gbd_long %>% 
+  pivot_wider(names_from = sex, values_from = deaths_millions) %>% 
+  mutate(Male - Female)
+
+gbd_long %>% 
+  pivot_wider(names_from = c(sex, year), values_from = deaths_millions)
+```
+
+### 3.8.2 Pivot values from columns to rows (longer)
+
+```{r}
+gbd_wide %>% 
+  pivot_longer(matches("Female|Male"), 
+               names_to = "sex_year", 
+               values_to = "deaths_millions") %>% 
+  slice(1:6)
+
+gbd_wide %>% 
+  select(matches("Female|Male"))
+```
+
+### 3.8.3 separate() a column into multiple columns
+
+```{r}
+gbd_wide %>% 
+  # same pivot_longer as before
+  pivot_longer(matches("Female|Male"), 
+               names_to = "sex_year", 
+               values_to = "deaths_millions") %>% 
+  separate(sex_year, into = c("sex", "year"), sep = "_", convert = TRUE)
+```
+
+## 3.9 arrange() rows
+
+```{r}
+gbd_long %>% 
+  arrange(deaths_millions) %>% 
+  # first 3 rows just for printing:
+  slice(1:3)
+
+gbd_long %>% 
+  arrange(-deaths_millions) %>% 
+  slice(1:3)
+
+gbd_long %>% 
+  arrange(desc(sex)) %>% 
+  # printing rows 1, 2, 11, and 12
+  slice(1,2, 11, 12)
+```
+
+### 3.9.1 Factor levels
+
+```{r}
+gbd_factored <- gbd_long %>% 
+  mutate(cause = factor(cause))
+
+gbd_factored$cause %>% levels()
+
+gbd_factored <- gbd_factored %>% 
+  mutate(cause = cause %>% 
+           fct_relevel("Injuries"))
+
+gbd_factored$cause %>% levels()
+```
+
+### 3.10.1 Exercise - pivot_wider()
+
+Look at Table 3.4 on page <https://argoshare.is.ed.ac.uk/healthyr_book/exercises.html>
+
+```{r}
+gbd_long <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/global_burden_disease_cause-year-sex.csv")
+
+# Solution:
+
+gbd_long %>% 
+  pivot_wider(names_from = cause, values_from = deaths_millions)
+```
+
+### 3.10.2 Exercise - group_by(), summarise()
+
+```{r}
+gbd_full <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/RHDS/master/data/global_burden_disease_cause-year-sex-income.csv")
+
+glimpse(gbd_full)
+
+summary_data1 <- 
+  gbd_full %>% 
+  group_by(year) %>% 
+  summarise(total_per_year = sum(deaths_millions))
+
+summary_data1
+
+summary_data2 <- 
+  gbd_full %>% 
+  group_by(year, cause) %>% 
+  summarise(total_per_cause = sum(deaths_millions))
+
+summary_data2
+```
+
+### 3.10.3 Exercise - full_join(), percent()
+
+```{r}
+# Solution:
+
+library(scales)
+full_join(summary_data1, summary_data2) %>% 
+  mutate(percentage = percent(total_per_cause/total_per_year)) 
+```
+
+### 3.10.4 Exercise - mutate(), summarise()
+
+```{r}
+# Solution:
+
+gbd_full %>% 
+  # aggregate to deaths per cause per year using summarise()
+  group_by(year, cause) %>% 
+  summarise(total_per_cause = sum(deaths_millions)) %>% 
+  # then add a column of yearly totals using mutate()
+  group_by(year) %>% 
+  mutate(total_per_year = sum(total_per_cause)) %>% 
+  # add the percentage column
+  mutate(percentage = percent(total_per_cause/total_per_year)) %>% 
+  # select the final variables for better viewing
+  select(year, cause, percentage) %>% 
+  pivot_wider(names_from = cause, values_from = percentage)
+```
+
+### 3.10.5 Exercise - filter(), summarise(), pivot_wider()
+
+```{r}
+# Solution:
+
+gbd_full %>% 
+  filter(year == 1990) %>% 
+  group_by(income, sex) %>% 
+  summarise(total_deaths = sum(deaths_millions)) %>% 
+  pivot_wider(names_from = income, values_from = total_deaths)
+```
+
+Wow! That was all for Chapter 3. GOOD JOB.
+
+The next chapter will take us in plotting awesome graphs. Let's proceed!
+
+------------------------------------------------------------------------
+
+# Chapter 4: Different types of plots
+
+Look at Figure 4.1 at <https://argoshare.is.ed.ac.uk/healthyr_book/chap04-h1.html>.
+
+You will now re-create the figure step by step!
+
+## 4.1 Get the data
+
+```{r}
+library(tidyverse)
+library(gapminder) # install.packages("gapminder")
+
+glimpse(gapminder)
+
+gapminder$year %>% unique()
+gapminder$country %>% n_distinct()
+gapminder$continent %>% unique()
+
+gapdata2007 <- gapminder %>% 
+  filter(year == 2007)
+
+gapdata2007
+
+# loads the gapminder dataset from the package environment
+# into your Global Environment
+gapdata <- gapminder
+```
+
+## 4.2 Anatomy of ggplot explained
+
+```{r}
+# recommended form:
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp))
+
+# NOT recommended form:
+ggplot(gapdata2007, aes(x = gdpPercap, y = lifeExp))
+
+# just a schematic example of using the pipe:
+#
+# data %>% 
+#   filter(...) %>% 
+#   mutate(...) %>% 
+#   ggplot(aes(...)) +
+#   ...
+```
+
+4.2 continued...
+
+```{r}
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_point()
+
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp, colour = continent)) +
+  geom_point()
+
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp, colour = continent)) +
+  geom_point(shape = 1)
+
+```
+
+4.2 continued...
+
+```{r}
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp, colour = continent)) +
+  geom_point(shape = 1) +
+  facet_wrap(~continent)
+
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp, colour = continent)) +
+  geom_point(shape = 1) +
+  facet_wrap(~pop > 50000000)
+
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap/1000, y = lifeExp, colour = continent)) +
+  geom_point(shape = 1) +
+  facet_wrap(~continent) +
+  theme_bw()
+```
+
+## 4.3 Set your theme - grey vs white
+
+```{r}
+theme_set(theme_bw())
+
+library(tidyverse)
+theme_set(theme_bw())
+```
+
+## 4.4 Scatter plots/bubble plots
+
+```{r}
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap/1000, y = lifeExp, size = pop)) +
+  geom_point()
+
+gapdata2007 %>% 
+  ggplot(aes(x = gdpPercap/1000, y = lifeExp, size = pop)) +
+  geom_point(shape = 1, alpha = 0.5)
+```
+
+## 4.5 Line plots/time series plots
+
+```{r}
+gapdata %>% 
+  filter(country == "United Kingdom") %>% 
+  ggplot(aes(x = year, y = lifeExp)) +
+  geom_line()
+
+gapdata %>% 
+  ggplot(aes(x = year, y = lifeExp)) +
+  geom_line()
+
+gapdata %>% 
+  ggplot(aes(x = year, y = lifeExp, group = country)) +
+  geom_line()
+
+```
+
+### 4.5.1 Exercise
+
+Look at Figure 4.9 on page <https://argoshare.is.ed.ac.uk/healthyr_book/line-plotstime-series-plots.html>
+
+```{r}
+gapdata %>% 
+  ggplot(aes(x = year, y = lifeExp, group = country)) +
+  geom_line()
+```
+
+Try to transform the above graph following these instructions:
+
+-   Colour lines by continents: add colour = continent inside aes();
+-   Continents on separate facets: + facet_wrap(\~continent);
+-   Use a nicer colour scheme: + scale_colour_brewer(palette = "Paired")
+
+## 4.6 Bar plots
+
+### 4.6.1 Summarised data
+
+```{r}
+gapdata2007 %>% 
+  filter(country %in% c("United Kingdom", "France", "Germany")) %>% 
+  ggplot(aes(x = country, y = lifeExp)) +
+  geom_col() 
+```
+
+### 4.6.2 Countable data
+
+```{r}
+gapdata2007 %>% 
+  count(continent)
+
+gapdata2007 %>% 
+  ggplot(aes(x = continent)) +
+  geom_bar()
+
+gapdata2007 %>% 
+  ggplot(aes(x = continent, colour = country)) +
+  geom_bar(fill = NA) +
+  theme(legend.position = "none")
+```
+
+### 4.6.3 colour vs fill
+
+### 4.6.4 Proportions
+
+```{r}
+gapdata2007 %>% 
+  ggplot(aes(x = "Global", fill = continent)) + 
+  geom_bar()
+```
+
+### 4.6.5 Exercise
+
+Look at Figure 4.13 on the page <https://argoshare.is.ed.ac.uk/healthyr_book/bar-plots.html> and try to recreate it!
+
+```{r}
+
+```
+
+## 4.7 Histograms
+
+```{r}
+gapdata2007 %>% 
+  ggplot(aes(x = lifeExp)) +
+  geom_histogram(binwidth = 10)
+```
+
+## 4.8 Box plots
+
+```{r}
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot()
+```
+
+## 4.9 Multiple geoms, multiple aes()
+
+```{r}
+# (1)
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  geom_point()
+
+# (2)
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  geom_jitter()
+```
+
+4.9 continued...
+
+```{r}
+# (3)
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp, colour = continent)) +
+  geom_boxplot() +
+  geom_jitter()
+
+# (4)
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  geom_jitter(aes(colour = continent))
+```
+
+### 4.9.1 Worked example - three geoms together
+
+```{r}
+label_data <- gapdata2007 %>% 
+  group_by(continent) %>% 
+  filter(lifeExp == max(lifeExp)) %>% 
+  select(country, continent, lifeExp)
+
+# since we filtered for lifeExp == max(lifeExp)
+# these are the maximum life expectancy countries at each continent:
+label_data
+
+gapdata2007 %>% 
+  ggplot(aes(x = continent, y = lifeExp)) +
+  # First geom - boxplot
+  geom_boxplot() +
+  # Second geom - jitter with its own aes(colour = )
+  geom_jitter(aes(colour = continent)) +
+  # Third geom - label, with its own dataset (label_data) and aes(label = )
+  geom_label(data = label_data, aes(label = country))
+```
+
+Try the suggested experiments given on page <https://argoshare.is.ed.ac.uk/healthyr_book/multiple-geoms-multiple-aes.html> with the R code above. (Copy-paste the above code chunk below to experiment with it!)
+
+## 4.10 All other types of plots
+
+## 4.11 Solutions
+
+You will find solutions to Exercises 4.5.1 and 4.6.5 on the page <https://argoshare.is.ed.ac.uk/healthyr_book/solutions.html>
+
+## 4.12 Extra: Advanced examples
+
+(this is all extra material, if you are curious and have some time to check it!)
+
+```{r}
+gapdata %>% 
+  filter(continent == "Europe") %>% 
+  ggplot(aes(y      = fct_reorder(country, lifeExp, .fun=max),
+             x      = lifeExp,
+             colour = year)) +
+  geom_point(shape = 15, size = 2) +
+  scale_colour_distiller(palette = "Greens", direction = 1) +
+  theme_bw()
+```
+
+another example:
+
+```{r}
+gapdata2007 %>% 
+  group_by(continent) %>% 
+  mutate(country_number = seq_along(country)) %>% 
+  ggplot(aes(x = continent)) +
+  geom_bar(aes(colour = continent), fill = NA, show.legend = FALSE) +
+  geom_text(aes(y = country_number, label = country), vjust = 1)+
+  geom_label(aes(label = continent), y = -1) +
+  theme_void()
+```
+
+Great! That was it for Chapter 4.
+
+The next chapter will take us further in fine tuning plots. It can be well considered EXTRA MATERIAL, so if you are curious, just go on and try it, too!
+
+**You may also skip Chapter 5 and proceed straight to Chapter 6.**
+
+You may come back in Chapter 5 anytime later, to learn the fine-tuning tricks!
+
+------------------------------------------------------------------------
+
+# Chapter 5: Fine tuning plots
+
+<https://argoshare.is.ed.ac.uk/healthyr_book/finetuning.html>
+
+## 5.1 Get the data
+
+```{r}
+library(gapminder)
+library(tidyverse)
+
+p0 <- gapminder %>% 
+  filter(year == 2007) %>% 
+  ggplot(aes(y = lifeExp, x = gdpPercap, colour = continent)) +
+  geom_point(alpha = 0.3) +
+  theme_bw() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_colour_brewer(palette = "Set1")
+
+p0
+```
+
+## 5.2 Scales
+
+### 5.2.1 Logarithmic
+
+```{r}
+p1 <- p0 + scale_x_log10()
+
+p1
+```
+
+### 5.2.2 Expand limits
+
+```{r}
+p2 <- p0 + expand_limits(y = 0)
+
+p2
+
+p3 <- p0 + expand_limits(y = c(0, 100))
+
+p3
+
+p4 <- p0 +
+  expand_limits(y = c(0, 100)) +
+  coord_cartesian(expand = FALSE)
+
+p4
+
+# you may install the package also by selecting the command after '#' and activating it:
+library(patchwork) # install.packages("patchwork")
+p1 + p2 + p3 + p4 + plot_annotation(tag_levels = "1", tag_prefix = "p")
+```
+
+### 5.2.3 Zoom in
+
+```{r}
+p5 <- p0 +
+  coord_cartesian(ylim = c(70, 85), xlim = c(20000, 40000)) 
+
+p5
+```
+
+### 5.2.4 Exercise
+
+```{r}
+p6 <- p0 +
+  scale_y_continuous(limits = c(70, 85)) +
+  scale_x_continuous(limits = c(20000, 40000))
+
+# Compare:
+
+p5 + labs(tag = "p5") + p6 + labs(tag = "p6")
+```
+
+### 5.2.5 Axis ticks
+
+```{r}
+# calculating the maximum value to be included in the axis breaks:
+max_value = gapminder %>% 
+  filter(year == 2007) %>%
+  summarise(max_lifeExp = max(lifeExp)) %>% 
+  pull(max_lifeExp) %>% 
+  round(1)
+
+# using scale_y_continuous(breaks = ...):
+p7 <-  p0 +
+  coord_cartesian(ylim = c(0, 100), expand = 0) +
+  scale_y_continuous(breaks = c(18, 50, max_value))
+
+# we may also include custom labels for our breaks:
+p8 <-  p0 +
+  coord_cartesian(ylim = c(0, 100), expand = 0) +
+  scale_y_continuous(breaks = c(18, 50, max_value), labels = c("Adults", "50", "MAX"))
+
+p7 + labs(tag = "p7") + p8 + labs(tag = "p8")
+```
+
+## 5.3 Colours
+
+### 5.3.1 Using the Brewer palettes:
+
+```{r}
+p9 <- p0 +
+  scale_color_brewer(palette = "Paired")
+```
+
+### 5.3.2 Legend title
+
+```{r}
+p10 <- p0 +
+  scale_color_brewer("Continent - \n one of 5", palette = "Paired")
+
+p9 + labs(tag = "p9") + p10 + labs(tag = "p10")
+```
+
+### 5.3.3 Choosing colours manually
+
+```{r}
+p11 <- p0 +
+  scale_color_manual(values = c("red", "green", "blue", "purple", "pink"))
+
+p12 <- p0 +
+  scale_color_manual(values = c("#8dd3c7", "#ffffb3", "#bebada",
+                                "#fb8072", "#80b1d3"))
+
+p11 + labs(tag = "p11") + p12 + labs(tag = "p12")
+```
+
+## 5.4 Titles and labels
+
+```{r}
+p13 <- p0 +
+  labs(x = "Gross domestic product per capita",
+       y = "Life expectancy",
+       title = "Health and economics",
+       subtitle = "Gapminder dataset, 2007",
+       caption = Sys.Date(),
+       tag = "p13")
+
+p13
+```
+
+### 5.4.1 Annotation
+
+```{r}
+p14 <- p0 +
+  annotate("text",
+           x = 25000,
+           y = 50,
+           label = "No points here!")
+
+p15 <- p0 +
+  annotate("label",
+           x = 25000,
+           y = 50,
+           label = "No points here!")
+
+p16 <- p0 +
+  annotate("label",
+           x = 25000, 
+           y = 50,
+           label = "No points here!", 
+           hjust = 0)
+
+p14 + labs(tag = "p14") + (p15 + labs(tag = "p15"))/ (p16 + labs(tag = "p16"))
+```
+
+### 5.4.2 Annotation with a superscript and a variable
+
+```{r}
+# a value we made up for this example
+# a real analysis would get it from the linear model object
+fit_glance <- tibble(r.squared = 0.7693465)
+
+
+plot_rsquared <- paste0(
+  "R^2 == ",
+  fit_glance$r.squared %>% round(2))
+
+
+p17 <- p0 +
+  annotate("text",
+           x = 25000, 
+           y = 50,
+           label = plot_rsquared, parse = TRUE,
+           hjust = 0)
+
+p17 + labs(tag = "p17")
+```
+
+## 5.5 Overall look - theme()
+
+### 5.5.1 Text size
+
+```{r}
+p18 <-  p0 +
+  theme(axis.text.y = element_text(colour = "green", size = 14),
+        axis.text.x = element_text(colour = "red",  angle = 45, vjust = 0.5),
+        axis.title  = element_text(colour = "blue", size = 16)
+        )
+
+p18 + labs(tag = "p18")
+```
+
+### 5.5.2 Legend position
+
+```{r}
+p19 <- p0 +
+  theme(legend.position = "none")
+
+p20 <- p0 +
+  theme(legend.position      = c(1,0), #bottom-right corner
+        legend.justification = c(1,0)) 
+
+p19 + labs(tag = "p19") + p20 + labs(tag = "p20")
+```
+
+5.5.2 continued...
+
+```{r}
+p21 <- p0 +
+  guides(colour = guide_legend(ncol = 2)) +
+  theme(legend.position = "top") # moving to the top optional
+
+p21 + labs(tag = "p21")
+```
+
+## 5.6 Saving your plot
+
+```{r}
+ggsave(p0, file = "my_saved_plot.pdf", width = 5, height = 4)
+
+ggsave(p0, file = "my_saved_plot_larger.pdf", width = 10, height = 8)
+```
+
+Congrats - that was all for Chapter 5!
+
+Chapters 6 and 8 prepare for the corresponding analysis chapters (7 and 9) in the RHDS book.
+
+Both chapters (6 and 8) include useful things, for example, for plotting and data wrangling with continuous (Ch.6) and categorical (Ch.8) variables. Hence you should practice them through, too.
+
+------------------------------------------------------------------------
+
+# Chapter 6: Working with continuous outcome variables
+
+<https://argoshare.is.ed.ac.uk/healthyr_book/chap06-h1.html>
+
+## 6.1 Continuous data
+
+## 6.2 The Question
+
+## 6.3 Get and check the data
+
+```{r}
+# Load packages (and install the finalfit package if not yet installed)
+library(tidyverse)
+library(finalfit) # install.packages("finalfit")
+library(gapminder)
+
+# Create object gapdata from object gapminder
+gapdata <- gapminder
+
+glimpse(gapdata) # each variable as line, variable type, first values
+
+missing_glimpse(gapdata) # missing data for each variable
+
+ff_glimpse(gapdata) # summary statistics for each variable
+```
+
+## 6.4 Plot the data
+
+### 6.4.1 Histogram
+
+```{r}
+gapdata %>% 
+  filter(year %in% c(2002, 2007)) %>%
+  ggplot(aes(x = lifeExp)) +       # remember aes()
+  geom_histogram(bins = 20) +      # histogram with 20 bars
+  facet_grid(year ~ continent)     # optional: add scales="free"                                 
+```
+
+### 6.4.2 Quantile-quantile (Q-Q) plot
+
+```{r}
+gapdata %>% 
+  filter(year %in% c(2002, 2007)) %>%
+  ggplot(aes(sample = lifeExp)) +      # Q-Q plot requires 'sample'
+  geom_qq() +                          # defaults to normal distribution
+  geom_qq_line(colour = "blue") +      # add the theoretical line
+  facet_grid(year ~ continent)
+```
+
+### 6.4.3 Boxplot
+
+```{r}
+gapdata %>% 
+  filter(year %in% c(2002, 2007)) %>%
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  facet_wrap(~ year)
+```
+
+6.4.3 continued...
+
+```{r}
+gapdata %>%  
+  filter(year %in% c(2002, 2007)) %>%
+  ggplot(aes(x = factor(year), y = lifeExp)) +
+  geom_boxplot(aes(fill = continent)) +     # add colour to boxplots
+  geom_jitter(alpha = 0.4) +                # alpha = transparency
+  facet_wrap(~ continent, ncol = 5) +       # spread by continent
+  theme(legend.position = "none") +         # remove legend
+  xlab("Year") +                            # label x-axis
+  ylab("Life expectancy (years)") +         # label y-axis
+  ggtitle(
+    "Life expectancy by continent in 2002 v 2007") # add title
+```
+
+## 6.5 Compare the means of two groups
+
+### 6.5.1 t-test
+
+### 6.5.2 Two-sample t-tests
+
+```{r}
+ttest_data <- gapdata %>%                    # save as object ttest_data
+  filter(year == 2007) %>%                   # 2007 only
+  filter(continent %in% c("Asia", "Europe")) # Asia/Europe only
+
+ttest_result <- ttest_data %>%               # example using pipe
+  t.test(lifeExp ~ continent, data = .)      # note data = ., see below
+ttest_result
+
+ttest_result$p.value # Extracted element of result object
+
+ttest_result$conf.int # Extracted element of result object
+```
+
+### 6.5.3 Paired t-tests
+
+```{r}
+paired_data <- gapdata %>%             # save as object paired_data
+  filter(year %in% c(2002, 2007)) %>%  # 2002 and 2007 only
+  filter(continent == "Asia")          # Asia only
+
+paired_data %>%      
+  ggplot(aes(x = year, y = lifeExp, 
+             group = country)) +       # for individual country lines
+  geom_line()
+```
+
+6.5.3 continued...
+
+```{r}
+paired_table <- paired_data %>%        # save object paired_data
+  select(country, year, lifeExp) %>%   # select vars interest
+  pivot_wider(names_from = year,       # put years in columns
+              values_from = lifeExp) %>% 
+  mutate(
+    dlifeExp = `2007` - `2002`         # difference in means
+  )
+paired_table
+
+# Mean of difference in years
+paired_table %>% summarise( mean(dlifeExp) )
+
+paired_data %>% 
+  t.test(lifeExp ~ year, data = ., paired = TRUE)
+```
+
+### 6.5.4 What if I run the wrong test?
+
+## 6.6 Compare the mean of one group: one sample t-tests
+
+```{r}
+# the tidy() function comes from the package broom - install it first!
+library(broom) # install.packages("broom")
+gapdata %>% 
+  filter(year == 2007) %>%          # 2007 only
+  group_by(continent) %>%           # split by continent
+  do(                               # dplyr function
+    t.test(.$lifeExp, mu = 77) %>%  # compare mean to 77 years 
+      tidy()                        # tidy into tibble
+  )
+
+```
+
+### 6.6.1 Interchangeability of t-tests
+
+```{r}
+# note that we're using dlifeExp
+# so the differences we calculated above
+t.test(paired_table$dlifeExp, mu = 0)
+```
+
+## 6.7 Compare the means of more than two groups
+
+### 6.7.1 Plot the data
+
+```{r}
+gapdata %>% 
+  filter(year == 2007) %>% 
+  filter(continent %in% 
+           c("Americas", "Europe", "Asia")) %>% 
+  ggplot(aes(x = continent, y=lifeExp)) +
+  geom_boxplot()
+```
+
+### 6.7.2 ANOVA
+
+```{r}
+aov_data <- gapdata %>% 
+  filter(year == 2007) %>% 
+  filter(continent %in% c("Americas", "Europe", "Asia"))
+
+fit = aov(lifeExp ~ continent, data = aov_data) 
+summary(fit)
+```
+
+6.7.2 continued...
+
+```{r}
+library(broom) # install.packages("broom")
+gapdata %>% 
+  filter(year == 2007) %>% 
+  filter(continent %in% c("Americas", "Europe", "Asia")) %>% 
+  aov(lifeExp~continent, data = .) %>% 
+  tidy()
+```
+
+### 6.7.3 Assumptions
+
+```{r}
+library(ggfortify) # install.packages("ggfortify")
+autoplot(fit)
+```
+
+## 6.8 Multiple testing
+
+### 6.8.1 Pairwise testing and multiple comparisons
+
+```{r}
+pairwise.t.test(aov_data$lifeExp, aov_data$continent, 
+                p.adjust.method = "bonferroni")
+
+pairwise.t.test(aov_data$lifeExp, aov_data$continent, 
+                p.adjust.method = "fdr")
+```
+
+## 6.9 Non-parametric tests
+
+### 6.9.1 Transforming data
+
+```{r}
+africa2002 <- gapdata %>%              # save as africa2002
+  filter(year == 2002) %>%             # only 2002
+  filter(continent == "Africa") %>%    # only Africa
+  select(country, lifeExp) %>%         # only these variables
+  mutate(
+    lifeExp_log = log(lifeExp)         # log life expectancy
+  )
+head(africa2002)                       # inspect
+
+africa2002 %>% 
+  # pivot lifeExp and lifeExp_log values to same column (for easy plotting):
+  pivot_longer(contains("lifeExp")) %>% 
+  ggplot(aes(x = value)) +             
+  geom_histogram(bins = 15) +          # make histogram
+  facet_wrap(~name, scales = "free")   # facet with axes free to vary
+```
+
+### 6.9.2 Non-parametric test for comparing two groups
+
+```{r}
+africa_data <- gapdata %>%                          
+  filter(year %in% c(1982, 2007)) %>%      # only 1982 and 2007
+  filter(continent %in% c("Africa"))       # only Africa
+
+p1 <- africa_data %>%                      # save plot as p1
+  ggplot(aes(x = lifeExp)) + 
+  geom_histogram(bins = 15) +
+  facet_wrap(~year)
+
+p2 <- africa_data %>%                      # save plot as p2
+  ggplot(aes(sample = lifeExp)) +          # `sample` for Q-Q plot
+  geom_qq() + 
+  geom_qq_line(colour = "blue") + 
+  facet_wrap(~year)
+
+p3 <- africa_data %>%                      # save plot as p3
+  ggplot(aes(x = factor(year),             # try without factor(year) to
+             y = lifeExp)) +               # see the difference
+  geom_boxplot(aes(fill = factor(year))) + # colour boxplot
+  geom_jitter(alpha = 0.4) +               # add data points
+  theme(legend.position = "none")          # remove legend
+
+library(patchwork) # install.packages("patchwork") # great for combining plots
+p1 / p2 | p3
+
+africa_data %>% 
+  wilcox.test(lifeExp ~ year, data = .)
+```
+
+### 6.9.3 Non-parametric test for comparing more than two groups
+
+```{r}
+library(broom)
+gapdata %>% 
+  filter(year == 2007) %>% 
+  filter(continent %in% c("Americas", "Europe", "Asia")) %>% 
+  kruskal.test(lifeExp~continent, data = .) %>% 
+  tidy()
+```
+
+## 6.10 Finalfit approach
+
+```{r}
+dependent <- "year"
+explanatory <- c("lifeExp", "pop", "gdpPercap")
+africa_data %>%         
+  mutate(
+    year = factor(year)
+  ) %>% 
+  summary_factorlist(dependent, explanatory,
+                     cont = "median", p = TRUE)
+```
+
+6.10 continued...
+
+```{r}
+dependent <- "year"
+explanatory <- c("lifeExp", "pop", "gdpPercap")
+africa_data %>%         
+  mutate(
+    year = factor(year)
+  ) %>% 
+  summary_factorlist(dependent, explanatory,
+                     cont_nonpara =  c(1, 3),         # variable 1&3 are non-parametric
+                     cont_range = TRUE,               # lower and upper quartile
+                     p = TRUE,                        # include hypothesis test
+                     p_cont_para = "t.test",          # use t.test/aov for parametric
+                     add_row_totals = TRUE,           # row totals
+                     include_row_missing_col = FALSE, # missing values row totals
+                     add_dependent_label = TRUE)      # dependent label 
+```
+
+## 6.11 Conclusions
+
+## 6.12 Exercises
+
+See page <https://argoshare.is.ed.ac.uk/healthyr_book/exercises-1.html>
+
+You may try yourself, and then check the solutions (link below)!
+
+### 6.12.1 Exercise
+
+```{r}
+
+```
+
+### 6.12.2 Exercise
+
+```{r}
+
+```
+
+### 6.12.3 Exercise
+
+```{r}
+
+```
+
+### 6.12.4 Exercise
+
+```{r}
+
+```
+
+## 6.13 Solutions
+
+Solutions to the above exercises!
+
+<https://argoshare.is.ed.ac.uk/healthyr_book/solutions-1.html>
+
+Great job! Chapter 6 DONE. Next: Chapter 8!
+
+------------------------------------------------------------------------
+
+# Chapter 8: Working with categorical outcome variables
+
+<https://argoshare.is.ed.ac.uk/healthyr_book/chap08-h1.html>
+
+## 8.1 Factors
+
+## 8.2 The Question
+
+## 8.3 Get the data
+
+```{r}
+# Get the data from the boot package (that includes tools for bootstrapping methods):
+meldata <- boot::melanoma # Survival from Malignant Melanoma
+```
+
+## 8.4 Check the data
+
+```{r}
+library(tidyverse)
+library(finalfit)
+theme_set(theme_bw())
+meldata %>% glimpse()
+
+meldata %>% ff_glimpse()
+```
+
+## 8.5 Recode the data
+
+```{r}
+meldata <- meldata %>% 
+  mutate(sex.factor =             # Make new variable  
+           sex %>%                # from existing variable
+           factor() %>%           # convert to factor
+           fct_recode(            # forcats function
+             "Female" = "0",      # new on left, old on right
+             "Male"   = "1") %>% 
+           ff_label("Sex"),       # Optional label for finalfit
+         
+         # same thing but more condensed code:
+         ulcer.factor = factor(ulcer) %>% 
+           fct_recode("Present" = "1",
+                      "Absent"  = "0") %>% 
+           ff_label("Ulcerated tumour"),
+         
+         status.factor = factor(status) %>% 
+           fct_recode("Died melanoma"       = "1",
+                      "Alive"               = "2",
+                      "Died - other causes" = "3") %>% 
+           ff_label("Status"))
+
+View(meldata) # take a look at the data!
+```
+
+## 8.6 Should I convert a continuous variable to a categorical variable?
+
+```{r}
+# Summary of age
+meldata$age %>% 
+  summary()
+
+meldata %>% 
+  ggplot(aes(x = age)) + 
+  geom_histogram()
+```
+
+### 8.6.1 Equal intervals vs quantiles
+
+```{r}
+meldata <- meldata %>% 
+  mutate(
+    age.factor = 
+      age %>%
+      cut(4)
+  )
+
+meldata$age.factor %>%
+  summary()
+```
+
+8.6.1 continued...
+
+```{r}
+meldata <- meldata %>% 
+  mutate(
+    age.factor = 
+      age %>%
+      Hmisc::cut2(g=4) # Note, cut2 comes from the Hmisc package
+  )
+
+meldata$age.factor %>% 
+  summary()
+
+View(meldata) # take a look at the data!
+```
+
+8.6.1 continued...
+
+```{r}
+meldata <- meldata %>% 
+  mutate(
+    age.factor = 
+      age %>%
+      cut(breaks = c(4,20,40,60,95), include.lowest = TRUE) %>% 
+      fct_recode(
+        "≤20"      =  "[4,20]",
+        "21 to 40" = "(20,40]",
+        "41 to 60" = "(40,60]",
+        ">60"      = "(60,95]"
+      ) %>% 
+      ff_label("Age (years)")
+  )
+head(meldata$age.factor)
+
+View(meldata) # take a look at the data!
+```
+
+## 8.7 Plot the data
+
+```{r}
+p1 <- meldata %>% 
+  ggplot(aes(x = ulcer.factor, fill = status.factor)) + 
+  geom_bar() + 
+  theme(legend.position = "none")
+
+p2 <- meldata %>% 
+  ggplot(aes(x = ulcer.factor, fill = status.factor)) + 
+  geom_bar(position = "fill") + 
+  ylab("proportion")
+
+library(patchwork)
+p1 + p2
+```
+
+8.7 continued...
+
+```{r}
+p1 <- meldata %>% 
+  ggplot(aes(x = ulcer.factor, fill = status.factor)) + 
+  geom_bar(position = position_stack(reverse = TRUE)) + 
+  theme(legend.position = "none")
+
+p2 <- meldata %>% 
+  ggplot(aes(x = ulcer.factor, fill = status.factor)) + 
+  geom_bar(position = position_fill(reverse = TRUE)) + 
+  ylab("proportion")
+
+library(patchwork)
+p1 + p2
+```
+
+8.7 continued...
+
+```{r}
+p1 <- meldata %>% 
+  ggplot(aes(x = ulcer.factor, fill=status.factor)) + 
+  geom_bar(position = position_stack(reverse = TRUE)) +
+  facet_grid(sex.factor ~ age.factor) + 
+  theme(legend.position = "none")
+
+p2 <- meldata %>% 
+  ggplot(aes(x = ulcer.factor, fill=status.factor)) + 
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  facet_grid(sex.factor ~ age.factor)+ 
+  theme(legend.position = "bottom") +
+  ylab("proportion") # this line was missing in the book
+
+p1 / p2
+```
+
+## 8.8 Group factor levels together - fct_collapse()
+
+```{r}
+meldata <- meldata %>%
+  mutate(
+    status_dss = fct_collapse( # dss - disease specific survival
+      status.factor,
+      "Alive" = c("Alive", "Died - other causes"))
+  )
+
+View(meldata) # take a look at the data!
+```
+
+## 8.9 Change the order of values within a factor - fct_relevel()
+
+```{r}
+# dss - disease specific survival
+meldata$status_dss %>% levels()
+
+meldata <- meldata %>% 
+  mutate(status_dss = status_dss %>%
+           fct_relevel("Alive")
+         )
+
+meldata$status_dss %>% levels()
+```
+
+## 8.10 Summarising factors with finalfit
+
+```{r}
+library(finalfit)
+meldata %>% 
+  summary_factorlist(dependent   = "status_dss", 
+                     explanatory = "ulcer.factor")
+```
+
+8.10 continued...
+
+```{r}
+library(finalfit)
+meldata %>% 
+  summary_factorlist(dependent = "status_dss", 
+                     explanatory = 
+                       c("ulcer.factor", "age.factor", 
+                         "sex.factor", "thickness")
+  )
+```
+
+## 8.11 Pearson's chi-squared and Fisher's exact tests
+
+### 8.11.1 Base R
+
+```{r}
+table(meldata$ulcer.factor, meldata$status_dss) 
+
+# both give same result
+
+with(meldata, table(ulcer.factor, status_dss))
+```
+
+8.11.1 continued...
+
+```{r}
+library(magrittr)
+meldata %$%        # note $ sign here
+  table(ulcer.factor, status_dss)
+
+meldata %$%
+  table(ulcer.factor, status_dss) %>% 
+  prop.table(margin = 1)     # 1: row, 2: column etc.
+
+meldata %$%        # note $ sign here
+  table(ulcer.factor, status_dss) %>% 
+  chisq.test()
+
+library(broom)
+meldata %$%        # note $ sign here
+  table(ulcer.factor, status_dss) %>% 
+  chisq.test() %>% 
+  tidy()
+```
+
+## 8.12 Fisher's exact test
+
+```{r}
+meldata %$%        # note $ sign here
+  table(age.factor, status_dss) %>% 
+  chisq.test()
+
+meldata %$%        # note $ sign here
+  table(age.factor, status_dss) %>% 
+  fisher.test()
+```
+
+## 8.13 Chi-squared / Fisher's exact test using finalfit
+
+```{r}
+library(finalfit)
+meldata %>% 
+  summary_factorlist(dependent   = "status_dss", 
+                     explanatory = "ulcer.factor",
+                     p = TRUE)
+
+meldata %>% 
+  summary_factorlist(dependent = "status_dss", 
+                     explanatory = 
+                       c("ulcer.factor", "age.factor", 
+                         "sex.factor", "thickness"),
+                     p = TRUE)
+
+meldata %>% 
+  summary_factorlist(dependent = "status_dss", 
+                     explanatory = 
+                       c("ulcer.factor", "age.factor", 
+                         "sex.factor", "thickness"),
+                     p = TRUE,
+                     p_cat = "fisher")
+```
+
+(The code chunk in 8.13, below the text "Further options can be included" does not work...)
+
+## 8.14 Exercises
+
+### 8.14.1 Exercise
+
+```{r}
+
+```
+
+### 8.14.2 Exercise
+
+```{r}
+meldata %>%
+  count(ulcer.factor, status.factor) %>%
+  group_by(status.factor) %>%
+  mutate(total = sum(n)) %>%
+  mutate(percentage = round(100*n/total, 1)) %>% 
+  mutate(count_perc = paste0(n, " (", percentage, ")")) %>% 
+  select(-total, -n, -percentage) %>% 
+  spread(status.factor, count_perc)
+```
+
+### 8.14.3 Exercise
+
+(Solutions to these exercises are not included in the book.)
+
+Gooood job! Chapter 8 DONE.
+
+------------------------------------------------------------------------

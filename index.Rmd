@@ -1,5 +1,6 @@
 ---
 title: "IODS course project"
+author: "Nathalie Ylenia Triches"
 output:
   html_document:
     theme: cosmo

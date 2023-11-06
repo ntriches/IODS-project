@@ -378,7 +378,8 @@ display: none;
 to Open Data Science - Course Project</a></li>
 <li><a href="#about-the-project" id="toc-about-the-project">About the
 project</a></li>
-<li><a href="#start-me-up" id="toc-start-me-up">Start me up!</a></li>
+<li><a href="#regression-and-model-validation" id="toc-regression-and-model-validation">Regression and model
+validation</a></li>
 </ul>
 </div>
 
@@ -390,7 +391,7 @@ project</a></li>
 <h1>About the project</h1>
 <p><em>This is a R Markdown file used for the “Introduction to Open Data
 Science” course at the University of Helsinki in 2023. The following
-lines are used to excercise the R Markdown syntax.</em></p>
+lines are used to exercise the R Markdown syntax.</em></p>
 <div id="not-so-random-thoughts" class="section level3">
 <h3>not-so-random thoughts</h3>
 <ul>
@@ -399,7 +400,7 @@ lines are used to excercise the R Markdown syntax.</em></p>
 <ul>
 <li>using tidyverse as a modern tool for R (rather than R base)</li>
 <li>learn how to use GitHub since I have no experience with it</li>
-<li>learn how to verson-control RStudio projects</li>
+<li>learn how to version-control RStudio projects</li>
 </ul></li>
 <li>I saw the course in SISU and in my PhD programme (ATM-DP) <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</li>
 </ul>
@@ -408,14 +409,46 @@ lines are used to excercise the R Markdown syntax.</em></p>
 # I don&#39;t have a code yet so I will leave this the way it is.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov  3 17:36:45 2023&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov  6 14:24:40 2023&quot;</code></pre>
+<p><em>Here below, I try to describe the work and results of the first
+week a. k. a. “warm up phase” of the IODS 2023 project.</em></p>
+</div>
+<div id="reflection-on-start-me-up" class="section level3">
+<h3>Reflection on “Start me up!”</h3>
+<ul>
+<li>I had to re-do the whole project twice to be able to get my course
+diary live - no idea what the mistake was</li>
+<li>I did not manage to commit-push with the Personal Access Token
+(PAT). The error was: <em>remote: Permission to
+ntriches/IODS-project.git denied to ntriches. fatal: unable to access
+‘<a href="https://github.com/ntriches/IODS-project.git/" class="uri">https://github.com/ntriches/IODS-project.git/</a>’: The
+requested URL returned error: 403</em></li>
+<li>I tried to solve it according to <a href="https://stackoverflow.com/questions/52533318/how-to-solve-the-requested-url-returned-error-403-in-git-repository">a
+stackoverflow answer</a> but that didn’t work neither</li>
+<li>In the end, I uploaded an <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent">SSH
+key</a>. With this, I can commit - push using the terminal, which works
+very well.</li>
+</ul>
+</div>
+<div id="reflection-on-learning-experiences-r-for-health-data-science" class="section level3">
+<h3>Reflection on learning experiences “R for Health Data Science”</h3>
+<p>… from “R for Health Data Science” chapter 1-4 and exercise set
+1.</p>
+<ul>
+<li>“R for Health Data Science” is a really nice book! I wish I had
+known it before</li>
+<li>If I didn’t know anything about R / RStudio, I think I’d be quite
+overwhelmed, simply because there is so much information</li>
+<li>My favourite topics were “2.11 joining multiple datasets” and “3.5
+summarise() vs mutate()” and “4.9 multiple geoms, multiple aes()”</li>
+</ul>
 <hr />
 </div>
 </div>
-<div id="start-me-up" class="section level1">
-<h1>Start me up!</h1>
-<p><em>This file describes the work and results of the first week a. k.
-a. “warm up phase” of the IODS 2023 project.</em></p>
+<div id="regression-and-model-validation" class="section level1">
+<h1>Regression and model validation</h1>
+<p><em>This file describes the work and results of the second week a. k.
+a. “Regression and model validation” of the IDOS2023 course.</em></p>
 <ul>
 <li>Describe your work and results clearly.</li>
 <li>Assume the reader has an introductory course level understanding of
@@ -424,13 +457,7 @@ writing and reading R code as well as statistical methods.</li>
 advanced methods you are using.</li>
 </ul>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov  3 17:36:45 2023&quot;</code></pre>
-<ul>
-<li>I didn’t manage to make the token work, but used an SSH key
-instead.</li>
-<li>With the SSH key, I can use the terminal of my computer to commit,
-push, and pull from GitHub.</li>
-</ul>
+<pre><code>## [1] &quot;Mon Nov  6 14:24:40 2023&quot;</code></pre>
 <hr />
 <p>(more chapters to be added similarly as we proceed with the
 course!)</p>

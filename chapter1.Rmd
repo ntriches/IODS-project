@@ -1,20 +1,19 @@
-
 # About the project
 
-*This is a R Markdown file used for the "Introduction to Open Data Science" course at the University of Helsinki in 2023. The following lines are used to excercise the R Markdown syntax.*
+*This is a R Markdown file used for the "Introduction to Open Data Science" course at the University of Helsinki in 2023. The following lines are used to exercise the R Markdown syntax.*
 
 ### not-so-random thoughts
 
-* I am feeling quite tired at the moment, it's Friday afternoon. 
-* In this course, I expect to learn a few things:
-   + using tidyverse as a modern tool for R (rather than R base)
-   + learn how to use GitHub since I have no experience with it
-   + learn how to verson-control RStudio projects
-* I saw the course in SISU and in my PhD programme (ATM-DP) [^1].
+-   I am feeling quite tired at the moment, it's Friday afternoon.
+-   In this course, I expect to learn a few things:
+    -   using tidyverse as a modern tool for R (rather than R base)
+    -   learn how to use GitHub since I have no experience with it
+    -   learn how to version-control RStudio projects
+-   I saw the course in SISU and in my PhD programme (ATM-DP) [^chapter1-1].
+
+[^chapter1-1]: Doctoral Programme in Atmospheric Sciences at the University of Helsinki.
 
 Here is a link to my GitHub repository: <https://github.com/ntriches/IODS-project>
-
-[^1]: Doctoral Programme in Atmospheric Sciences at the University of Helsinki.
 
 ```{r}
 # This is a so-called "R chunk" where you can write R code. 
@@ -24,5 +23,19 @@ date()
 
 ```
 
+*Here below, I try to describe the work and results of the first week a. k. a. "warm up phase" of the IODS 2023 project.*
 
+### Reflection on "Start me up!"
 
+-   I had to re-do the whole project twice to be able to get my course diary live - no idea what the mistake was
+-   I did not manage to commit-push with the Personal Access Token (PAT). The error was: *remote: Permission to ntriches/IODS-project.git denied to ntriches. fatal: unable to access '<https://github.com/ntriches/IODS-project.git/>': The requested URL returned error: 403*
+-   I tried to solve it according to [a stackoverflow answer](https://stackoverflow.com/questions/52533318/how-to-solve-the-requested-url-returned-error-403-in-git-repository) but that didn't work neither
+-   In the end, I uploaded an [SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent). With this, I can commit - push using the terminal, which works very well.
+
+### Reflection on learning experiences "R for Health Data Science"
+
+... from "R for Health Data Science" chapter 1-4 and exercise set 1.
+
+-   "R for Health Data Science" is a really nice book! I wish I had known it before
+-   If I didn't know anything about R / RStudio, I think I'd be quite overwhelmed, simply because there is so much information
+-   My favourite topics were "2.11 joining multiple datasets" and "3.5 summarise() vs mutate()" and "4.9 multiple geoms, multiple aes()"

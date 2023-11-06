@@ -1,6 +1,6 @@
-# Start me up!
+# Regression and model validation
 
-*This file describes the work and results of the first week a. k. a. "warm up phase" of the IODS 2023 project.*
+*This file describes the work and results of the second week a. k. a. "Regression and model validation" of the IDOS2023 course.*
 
 - Describe your work and results clearly. 
 - Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
@@ -10,5 +10,4 @@
 date()
 ```
 
-- I didn't manage to make the token work, but used an SSH key instead. 
-- With the SSH key, I can use the terminal of my computer to commit, push, and pull from GitHub. 
+

@@ -640,7 +640,7 @@ library(GGally)
 library(ggplot2)
 # create an plot matrix with ggpairs()
 ggpairs(learning2014, lower = list(combo = wrap("facethist", bins = 20)))
-
+?ggpairs
 # create a regression model with multiple explanatory variables
 my_model2 <- lm(points ~ attitude + stra, data = learning2014)
 

@@ -72,13 +72,13 @@ str(learning2014)  # yes
 
 # Analysis ####
 
-# 1. Read and summarise file
+# 1. Read and summarise file ####
 # load saved file from above
 learning2014 <- read.table(file='/home/ntriches/github_iods2023/IODS23/data/learning2014.csv', header=TRUE, sep = ",")
 str(learning2014)
 dim(learning2014)
 
-# 2. Graphical overview
+# 2. Graphical overview ####
 # show summaries of the variables in the data
 # Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them
 library(ggplot2)
@@ -89,11 +89,12 @@ overview_plot <- learning2014 %>%
           lower = list(combo = wrap("facethist", bins = 20)))
 overview_plot
 
-# 3. Regression model
-# Choose three variables as explanatory variables: age, gender, strategic learning
+# 3. Regression model ####
+# Choose three variables as explanatory variables: age, attitude, strategic learning
 # fit a regression model where exam points is the target (dependent, outcome) variable
+# what about gender? How could I plot it? 
 
-# scatter plot of points versus gender
+# scatter plot of points versus attitude
 scatterplot_points_attitude <- learning2014 %>%
   ggplot(aes(x = attitude, y = points)) +
   geom_point(size = 1.5) +
@@ -118,11 +119,28 @@ scatterplot_points_stra
 # y = target (outcome) variable = points
 # x = explanatory variables (predictor) = age, gender, strategic learning
 
+# what about gender? How could I plot it? 
 # create a regression model with multiple explanatory variables
 lm_model_points_stra_age_attitude <- lm(points ~ stra + age + attitude, data = learning2014)
+
+# 4. Explanation, interpretation and summary ####
+# NOTE: The interpretation and explanation of the model is found in chapter2.Rmd
+# Show a summary of the fitted model and comment and interpret the results
+# Explain and interpret the statistical test related to the model parameters
+# If an explanatory variable in your model does not have a statistically significant 
+# relationship with the target variable, remove the variable from the model and fit the model again without it.
+
 summary(lm_model_points_stra_age_attitude)
 
-# plot Residuals vs Fitted values, Normal QQ-plot, and Residuals vs Leverage
+#Using a summary of your fitted model, explain the relationship between the 
+# chosen explanatory variables and the target variable (interpret the model parameters). 
+#Explain and interpret the multiple R-squared of the model.
+
+
+# 5. Plot Residuals vs Fitted values, Normal QQ-plot, and Residuals vs Leverage ####
+# Produce the following diagnostic plots: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage. 
+# Explain the assumptions of the model and interpret the validity of those assumptions based on the diagnostic plots. 
+
 ?plot.lm
 par(mfrow = c(2,2))
 plot(lm_model_points_stra_age_attitude,

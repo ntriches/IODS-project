@@ -2,15 +2,83 @@
 
 *This file describes the work and results of the second week a. k. a. "Regression and model validation" of the IDOS2023 course.*
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+-   Describe your work and results clearly.
+-   Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
+-   Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
 
-```{r}
-date()
+### Information on dataset
+
+The dataset includes data which is based on a survey conducted in Finland between 3.12.2014 and 10.1.2015. The aim of the survey was to find the relationship between learning approaches and students achievements in an introductory statistics course in Finland (click [here](https://www.slideshare.net/kimmovehkalahti/the-relationship-between-learning-approaches-and-students-achievements-in-an-introductory-statistics-course-in-finland) to see more information on the data set and the course). The dataset has 166 observations / rows with 7 variables / columns, of which four are numerical, two are integer and one is a categorical character variable (see output below for details). Note that only few of the originally recorded values are included in this dataset.
+
+```{r, message = FALSE}
+# 1. Read and summarise file 
+# load saved file from data wrangling excercise 
+learning2014 <- read.table(file='/home/ntriches/github_iods2023/IODS23/data/learning2014.csv', header=TRUE, sep = ",")
+str(learning2014)
+dim(learning2014)
+
+```
+
+The following figure shows a plot matrix of the 7 variables in the dataset, where each variable is plotted versus one other variable. The pink colour shows data from female students, whereas the blue colour shows data from male students of the survey. The scatterplots, distribution and correlation is thus shown divided in both female and male students. The distribution of the data shows that the majority of the students were very young (< 25 years old), leading to a right skewed distribution of age. All other variables are relatively normally distributed, with some tendencies towards a left skewed distribution for the point and deep, and the male attitude variables. This can be well seen in the boxplots on the top row of the matrix.
+
+We can see that the a better attitude towards the course, represented in a higher number, seems to lead to significantly higher points, in other words, to a better results in the exam (p < 0). The strategic learning approach also leads to better exam results, shown by a significant positive relationship (p <0.05). On the other hand, we can suggest that deep or surface learning, showing negative correlations with points, are not very successful learning approaches as they lead to lower exam results. 
+
+
+```{r, message = FALSE}
+# 2. Graphical overview 
+# show summaries of the variables in the data
+# Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them
+library(ggplot2)
+library(GGally)
+
+overview_plot <- learning2014 %>%
+  ggpairs(mapping = aes(col = gender, alpha = 0.3),
+          lower = list(combo = wrap("facethist", bins = 20)))
+overview_plot
 ```
 
 
 
+### Regression model 
+
+For the multivariable regression model, I selected the three explanatory variables age, attitude, and strategic learning ("stra"). The dependent target variable is points. For my model, I set the significance level at p = 0.05. 
+
+The summary of my model (shown below) first shows my model itself in the function call, then shows the distribution of the residuals, the results ("Coefficients"), and information on how well the model explains the variability of the data in the end ("Residual standard error", "R-squared", "F-statistic"). The residual standard error shows ... ? The multiple R-squared informs us on how well our model explains the variability of the dataset. The adjusted R-squared takes into account that we I used multiple variables in my model. 
+
+In my model, both strategic learning and attitude show a positive relationship with points (p < 0.05 and p < 0, respectively). Age shows a negative correlation with points (p < 0.05). In other words, a positive attitude towards the course and the strategic learning approach led to higher exam results, whereas older students seemed to struggle more than younger. If the attitude increased by 3.5 and strategic learning increased by 1, there was 1 increase in points. Nevertheless, the explanatory variables I chose in my model only explain around 20% of the variation in the data. This is shown by an adjusted R-squared value of 0.2037. 
+
+
 ```{r}
+# 3. Regression model 
+# Choose three variables as explanatory variables: age, attitude, strategic learning
+# fit a regression model where exam points is the target (dependent, outcome) variable
+
+# create a regression model with multiple explanatory variables
+lm_model_points_stra_age_attitude <- lm(points ~ stra + age + attitude, data = learning2014)
+
+# 4. Explanation, interpretation and summary 
+# Show a summary of the fitted model and comment and interpret the results
+# Explain and interpret the statistical test related to the model parameters
+# If an explanatory variable in your model does not have a statistically significant 
+# relationship with the target variable, remove the variable from the model and fit the model again without it.
+summary(lm_model_points_stra_age_attitude)
+
+```
+
+
+### Assumptions of the model and validity interpretation 
+
+...? 
+
+
+```{r}
+# 5. Plot Residuals vs Fitted values, Normal QQ-plot, and Residuals vs Leverage ####
+# Produce the following diagnostic plots: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage. 
+# Explain the assumptions of the model and interpret the validity of those assumptions based on the diagnostic plots. 
+
+?plot.lm
+par(mfrow = c(2,2))
+plot(lm_model_points_stra_age_attitude,
+     which = c(1,2,5))
+par(mfrow = c(1,1))
 ```

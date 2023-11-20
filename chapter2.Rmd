@@ -2,9 +2,9 @@
 
 *This file describes the work and results of the second week a. k. a. "Regression and model validation" of the IDOS2023 course.*
 
-### Information on dataset
+### Information on data set
 
-The dataset includes data which is based on a survey conducted in Finland between 3.12.2014 and 10.1.2015. The aim of the survey was to find the relationship between learning approaches and students achievements in an introductory statistics course in Finland (click [here](https://www.slideshare.net/kimmovehkalahti/the-relationship-between-learning-approaches-and-students-achievements-in-an-introductory-statistics-course-in-finland) to see more information on the data set and the course). The dataset has 166 observations / rows with 7 variables / columns, of which four are numerical, two are integer and one is a categorical character variable (see output below for details). Note that only few of the originally recorded values are included in this dataset.
+The data set includes data which is based on a survey conducted in Finland between 3.12.2014 and 10.1.2015. The aim of the survey was to find the relationship between learning approaches and students achievements in an introductory statistics course in Finland (click [here](https://www.slideshare.net/kimmovehkalahti/the-relationship-between-learning-approaches-and-students-achievements-in-an-introductory-statistics-course-in-finland) to see more information on the data set and the course). The dataset has 166 observations / rows with 7 variables / columns, of which four are numerical, two are integer and one is a categorical character variable (see output below for details). Note that only few of the originally recorded values are included in this data set.
 
 ```{r, message = FALSE}
 # message = FALSE will not show any message from R

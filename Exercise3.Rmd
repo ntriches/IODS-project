@@ -606,13 +606,13 @@ library(dplyr)
 alc <- mutate(alc, probability = probabilities)
 
 # use the probabilities to make a prediction of high_use
-alc <- mutate(alc, prediction = "change me!")
+alc <- mutate(alc, prediction > 0.5)
 
 # see the last ten original classes, predicted probabilities, and class predictions
 select(alc, failures, absences, sex, high_use, probability, prediction) %>% tail(10)
 
 # tabulate the target variable versus the predictions
-table(high_use = alc$high_use, prediction = "change me!")
+table(high_use = alc$high_use, prediction = alc$prediction)
 
 
 ```
@@ -656,13 +656,16 @@ Hint:
 library(dplyr); library(ggplot2)
 
 # initialize a plot of 'high_use' versus 'probability' in 'alc'
-g <- ggplot(alc, aes(x = "change me!", y = "change me!"))
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
 
 # define the geom as points and draw the plot
-
+g +
+  geom_point()
 
 # tabulate the target variable versus the predictions
-table(high_use = alc$high_use, prediction = alc$prediction)
+table(high_use = alc$high_use, prediction = alc$prediction) %>%
+  # prop.table() %>%
+  addmargins()
 
 
 ```
@@ -759,10 +762,13 @@ loss_func <- function(class, prob) {
 
 # compute the average number of wrong predictions in the (training) data
 
-
 # K-fold cross-validation
 library(boot)
 cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = nrow(alc))
+
+# 10-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
 
 # average number of wrong predictions in the cross validation
 cv$delta[1]

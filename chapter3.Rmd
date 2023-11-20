@@ -2,45 +2,38 @@
 
 *This file describes the work and results of the third week a. k. a. "Logistic regression" of the IDOS2023 course.*
 
-## Information on dataset
+### Information on dataset
 
 The original data set includes data from student performances in the subjects "Mathematics" and "Portuguese language" in secondary education (high school) in two Portuguese schools. It was collected through school reports and questionnaires, and gives information on the demographic and social background of the students, as well as student grades and data on the school they visit (click [here](https://archive.ics.uci.edu/dataset/320/student+performance) to see more information on the data set and access the data). One of the collected variables concerns the alcohol consumption of the students. 
 
-The data set we use has 370 observations / rows with 35 variables / columns (see below). It combines the data from two student alcohol consumption data sets, where 'alc_use' gives the average of the weekly alcohol consumption from 1 - very low to 5- very high, and 'high_use' = TRUE when students consume more than a little amount of alcohol (> 2). 
+The data set we use has 370 observations / rows with 35 variables / columns, of which most are numerical integers and binary characters, but also some nominal characters where more than two options are available. It combines the data from two student alcohol consumption data sets, where 'alc_use' gives the average of the weekly alcohol consumption from 1 - very low to 5 - very high, and the logical variable 'high_use' = TRUE / FALSE indicates if students consume more than a little amount of alcohol (> 2). 
 
 ```{r, message = FALSE}
-# message = FALSE will not show any message from R
-
 # Read and summarise file 
 # load saved file from data wrangling exercise 
 alc <- read.table(file='/home/ntriches/github_iods2023/IODS23/data/alc.csv', header=TRUE, sep = ",")
 colnames(alc) # names of variables 
-str(alc)      # structure of data
 dim(alc)      # dimension of data
 
 ```
 
-## Analysis 
+### Analysis 
 
-## Aim
+#### Aim
 
-The aim of my analysis is to study the relationships between high / low alcohol consumption and the gender of the students ("sex", female / male), if they go out with friends often ("goout", 1 - very low to 5 - very high), if they miss school often ("absences", number of school absences) and how well they performed in their final grades ("G3", 0 to 20). My personal hypotheses are as follows:
+The aim of my analysis is to study the relationships between high / low alcohol consumption and the gender of the students ("sex", female / male), if they go out with friends often ("goout", 1 - very low to 5 - very high), if they miss school often ("absences", number of school absences), and how well they performed in their final grades ("G3", 0 to 20). My personal hypotheses are as follows: 
 
 1. Students identifying as female drink less (relatively) than students identifying as males. 
-2. If the students go out with friends often, they have a higher alcohol consumption.
-3. The higher the number of school absences, they higher the alcohol consumption.
-4. The more the students drink, the lower their final grade is. 
+2. If the students go out with friends often, they drink more (= A higher number in *goout* results in high alcohol consumption).
+3. The more classes the students miss, the more likely they drink (= The higher the number of school absences, the more likely is a high alcohol consumption.).
+4. The more the students drink, the lower their final grade is (= Students showing high consumption of alcohol have lower results in their final grade). 
 
-## Numerical and graphical exploration 
+#### Numerical and graphical exploration 
 
+The numerical exploration of our data shows that most students fall under the category of low alcohol consumption (< 2). Females and males are almost equally distributed (195 and 175, respectively). It is evident that in *goout* and *absences*, most students are clustered in the categories 3 and 4 (see medians). It is only with the means that we can see some differences. 
 
-The following figure...
-
-Numerically and graphically explore the distributions of your chosen variables and their relationships with alcohol consumption (use for example cross-tabulations, bar plots and box plots). Comment on your findings and compare the results of your exploration to your previously stated hypotheses. (0-5 points)
-
-```{r}
-# load needed libraries 
-library(dplyr); library(ggplot2)
+```{r, message = FALSE, fig.width=14, fig.height=12}
+library(dplyr)  # load needed library
 
 # summary statistics by group
 # differences between female / male and high / low alcohol consumption, mean of going out, mean of absences, mean of final grade
@@ -48,30 +41,142 @@ alc %>%
   group_by(sex, high_use) %>% 
   summarise(count = n(), 
             mean_goout = mean(goout),
-            mean_absences = mean(absences), 
-            mean_grade = mean(G3)
+            median_goout = median(goout),
+            mean_absences = mean(absences),
+            median_absences = median(absences),
+            mean_grade = mean(G3),
+            median_grade = median(G3)
             )
-
-# boxplots
-plot_alc_use_goout_by_sex <- alc %>%
-  ggplot(aes(x = high_use, y = goout, col = sex)) +
-  geom_boxplot()
-plot_alc_use_goout_by_sex
-
-plot_alc_use_absences_by_sex <- alc %>%
-  ggplot(aes(x = high_use, y = absences, col = sex)) +
-  geom_boxplot()
-plot_alc_use_absences_by_sex
-
-plot_alc_use_grades_by_sex <- alc %>%
-  ggplot(aes(x = high_use, y = absences, col = sex)) +
-  geom_boxplot()
-plot_alc_use_grades_by_sex
 
 ```
 
-1. 40% of males show a high alcohol consumption (70 TRUE / 175 total * 100). Compared to 21 % of the females showing a high alcohol consumption (41 TRUE / 195 total * 100), I can assume that my first hypothesis, that males drink more than females, is correct.
-2. Females who have a high alcohol consumption go out more often (3.4) compared to those who go out less frequently (3). For males, the differences is even greater: Those going out often (3.9) drink more compared to those who go out less (2.7). I can therefore assume that my seconds hypothesis, that those students who go out often drink more, is correct.
-3. Females seem to miss school more often than males but for both genders, the same trend is evident: They show a high use of alcohol with a higher number of absences. I can assume that my third hypothesis can be accepted.
-4. Males who show a high alcohol consumption achieve lower grades in their final exam compared to those with low alcohol consumption (10.3 and 12.3, respectively). For females, the differences in the final grades are smaller and show an opposite trend: with high alcohol consumption, the final grades are slightly higher than with low alcohol consumption (11.8 and 11.4, respectively). My fourth hypothesis, that high alcohol consumption results in lower final grades, can therefore only be accepted for males. 
+The clustering of the medians is also evident when looking at the boxplots (see below). In *goout*, the upper quartile equals the median for males in *high use = FALSE*, and in *high use = TRUE* for females. *absences* show a relatively high amount of outliers but generally an increase in *high use = TRUE*. In the grades (*G3*), we can immediately see that there are great differences between females and males. 
+
+
+```{r, message = FALSE, fig.width=14, fig.height=6}
+library(dplyr)
+library(ggplot2) # load needed libraries 
+# install.packages("patchwork") to show boxplots next to each other
+library(patchwork)
+
+# box plot showing differences between sex concerning high consumption of alcohol and going out
+plot_alc_use_goout_by_sex <- alc %>%
+  ggplot(aes(x = high_use, y = goout, col = sex)) +
+  geom_boxplot()
+# box plot showing differences between sex concerning high consumption of alcohol and absences in school
+plot_alc_use_absences_by_sex <- alc %>%
+  ggplot(aes(x = high_use, y = absences, col = sex)) +
+  geom_boxplot()
+# box plot showing differences between sex concerning high consumption of alcohol and final grades
+plot_alc_use_grades_by_sex <- alc %>%
+  ggplot(aes(x = high_use, y = G3, col = sex)) +
+  geom_boxplot()
+# show and combine all plots 
+plot_alc_use_goout_by_sex + plot_alc_use_absences_by_sex + plot_alc_use_grades_by_sex + plot_layout(guides = 'collect')
+
+```
+
+Concerning my hypotheses, this means the following:
+
+1. 40% of males show a high alcohol consumption (70 TRUE / 175 total * 100). Compared to 21 % of the females showing a high alcohol consumption (41 TRUE / 195 total * 100), I can assume that my first hypothesis, males drinking more than females, can be accepted.
+2. Females who have a high alcohol consumption go out more often (3.4) compared to those who go out less frequently (3). For males, the differences is even greater: those going out often (3.9) drink more compared to those who go out less (2.7). I can therefore assume that my seconds hypothesis, that those students who go out often drink more, can be accepted.
+3. Females seem to miss school more often than males but for both genders, the same trend is evident: they show a high use of alcohol with a higher number of absences. I can assume that my third hypothesis can be accepted.
+4. Males who show a high alcohol consumption achieve lower grades in their final exam compared to those with low alcohol consumption (10.3 and 12.3, respectively). For females, the differences in the final grades are smaller and show an opposite trend: with high alcohol consumption, the final grades are slightly higher than with low alcohol consumption (11.8 and 11.4, respectively). My fourth hypothesis, that high alcohol consumption results in lower final grades, can therefore only be accepted partially. 
+
+#### Logistic regression model 
+
+We use a logistic regression to statistically explore the relationship between the binary high / low alcohol consumption variable as the target variable, and the explanatory variables gender (*sex*), how often students go out (*goout*), their absences at school (*absences*), and their final grades (*G3*). 
+
+```{r, message = FALSE}
+# find the model with glm()
+model_high_use_sex_goout_absences_grades <- glm(high_use ~ sex + goout + absences + G3, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(model_high_use_sex_goout_absences_grades) # G3 (grades) not statistically significant 
+
+```
+
+We can see that *absences*, *goout*, and *sexM* show very significant positive correlations with a high alcohol consumption (p < 0.001), whereas the final grades (*G3*) do not show a significant relationship with alcohol consumption. *sexM* indicates that males are more likely to drink a lot of alcohol compared to females. In other words, male students, students who miss a lot of classes, and students who go out more often drink more alcohol. 
+
+```{r, message = FALSE}
+# compute odds ratios (OR)
+OR <- coef(model_high_use_sex_goout_absences_grades) %>% 
+  exp 
+
+# compute confidence intervals (CI)
+CI <- confint(model_high_use_sex_goout_absences_grades) %>% 
+  exp
+
+# print out the odds ratios with their confidence intervals
+cbind(OR, CI)
+
+```
+
+The odds ratios show that the odds that males have a high alcohol consumption are 2.8 with a 95 % confidence interval ranging from 1.7 to 4.6. Similarly, the odds of students going out more having a high alcohol consumption are 2 with a confidence interval ranging between 1.6 and 2.6. 
+
+#### Predictions 
+
+With our logistic regression model, it is possible to make predictions, and explore how well the models actually predicts the target variable *high alcohol consumption*. We can do this proving a 2x2 cross tabulation of predictions versus the actual values, and a graphic visualisation of predictions and actual values (see below). To improve our model, we remove the explanatory variable that didn't have a significant relationship with the alcohol consumption (*G3*). 
+
+```{r}
+# run new model without grades (G3) because they had no significant influence on high_use
+model_high_use_sex_goout_absences <- glm(high_use ~ sex + goout + absences, data = alc, family = "binomial")
+# print out summary of model
+summary(model_high_use_sex_goout_absences)
+
+# predict() the probability of high_use and add to alc data frame 
+alc <- mutate(alc, probability = predict(model_high_use_sex_goout_absences, type = "response"))
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability > 0.5)
+# tabulate the target variable versus the predictions: 2x2 cross tabulation
+table(high_use = alc$high_use, prediction = alc$prediction) %>%
+  addmargins()
+# tabulate the target variable versus the predictions in percentages
+table(high_use = alc$high_use, prediction = alc$prediction) %>%
+  prop.table() %>%
+  addmargins()
+
+# plot 'high_use' versus 'probability' 
+plot_probability_high_use_prediction <- alc %>%
+  ggplot(aes(x = probability, y = high_use, col = prediction)) +
+  geom_point()
+plot_probability_high_use_prediction
+
+```
+
+We can see that our model predicts the target value very well: if student weren't classified within the category of high alcohol consumption (*high use = FALSE*), the model predicted this correctly for 242 out of 259 students in 65% of the cases. If students were classified as drinking a lot of alcohol (*high use = TRUE*), the model predicted this correctly for 50 out of 111 students, in 13 % of the cases. This is also visible in the figure: In the upper line showing observations for students with a high alcohol consumption (*TRUE*), most observations can be found on the right side of the plot (probability > 0.5, prediction = TRUE in blue). Opposite to this, the lower line shows that students with a low alcohol consumption (*FALSE*), most observations lie on the left side (probability < 0.5, prediction = FALSE in red). 
+
+It is also possible to compute the total proportion of inaccurately classified individuals (= the training error). As we can see below, the model predicts around 30% (0.3) of the observations wrongly. Compared to 70% of correct predictions, this is an acceptable amount. 
+
+```{r}
+# define a loss function (mean prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = 0)
+# call loss_func to compute the average number of right predictions in the (training) data
+loss_func(class = alc$high_use, prob = 1)
+
+```
+
+#### Cross-validation
+
+[Cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)) is a method which we can use to get a good estimate of the actual predictive power and the model. We can also use it to compre different models. As we can see below, my model shows an error of 0.21 with a 10-fold cross-validation. This is lower than the model in the Exercise set (error = 0.26). 
+
+
+
+```{r}
+library(boot) 
+
+# 10-fold cross-validation
+ten_fold_cross_validation <- cv.glm(data = alc, cost = loss_func, glmfit = model_high_use_sex_goout_absences, K = 10)
+# average number of wrong predictions in the cross validation
+ten_fold_cross_validation$delta[1]
+```
+
+
+
 

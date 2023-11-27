@@ -14,7 +14,7 @@ The **Boston** data set from the **MASS** package in R consists of information o
 
 The data set contains 506 rows (observations) and 14 columns (variables), of which all are numerical values and none are characters. *chas* is a binary integer, and *rad* an integer number. More information on the data set, its variables the abbreviations can be found [here](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html).
 
-```{r, message = FALSE}
+```{r, message = FALSE, fig.height = 14, fig.width= 14}
 # access all packages needed in this chunk
 library(MASS)
 library(dplyr)
@@ -31,9 +31,9 @@ dim(Boston)
 
 #### Graphical and numerical overview
 
-The black-and-white plot matrix below shows that numerous variables are grouped in two groups, *e. g.*, *chas* (binary), *rad*, and *tax*. *crim* and *zn* indicate that many observations are 0 (*i. e.*, no crimes and no large residental home, respectively). Most of the variables are not normally distributed: the proportion of owner-occupied units built prior to 1940 (*age*) is high, as well as the amount of black people living in the suburbs (*black*). 
+The black-and-white plot matrix below shows that numerous variables are grouped in two groups, *e. g.*, *chas* (binary), *rad*, and *tax*. *crim* and *zn* indicate that many observations are 0 (*i. e.*, no crimes and no large residential home, respectively). Most of the variables are not normally distributed: the proportion of owner-occupied units built prior to 1940 (*age*) is high, as well as the amount of black people living in the suburbs (*black*). 
 
-```{r, message = FALSE}
+```{r, message = FALSE, fig.height = 14, fig.width= 14}
 # access all packages needed in this chunk
 library(dplyr)
 library(tidyverse)
@@ -70,18 +70,21 @@ To perform a linear discriminant analysis, it is necessary to scale the data. Fo
 
 $$scaled(x) = \frac{x - mean(x)}{ sd(x)}$$
 
+When we look at the scaled data, we can see in the summary that the mean of all variables equals 0. Similarly, the standard deviation is 1 for all variables (not seen for all variables). 
+
 ```{r}
 # center and standardize variables
 boston_scaled <- Boston %>%
   scale()
-# summaries of the scaled variables
-summary(boston_scaled)
-sd(boston_scaled$zn)
-sd(boston_scaled$age)
 # change the object to data frame
 boston_scaled <- as.data.frame(boston_scaled)
 # change crim to numeric
 boston_scaled$crim <- as.numeric(boston_scaled$crim)
+# summaries of the scaled variables
+summary(boston_scaled)
+sd(boston_scaled$zn)
+sd(boston_scaled$age)
+
 # create a quantile vector of crim 
 bins <- quantile(boston_scaled$crim)
 # create a categorical variable 'crime'
@@ -106,14 +109,13 @@ test <- boston_scaled[-ind,]
 
 ```
 
-When we look at the scaled data, we can see in the summary that the mean of all variables equals 0. Similarly, the standard deviation is 1 for all variables (not seen for all). 
-
 In order to then predict what might happen in Boston's suburbs in the future, we need to know how well the model we will use works. For this, we split the original data set into a train (80% of the data) and test set (20 % of the data). We can then train the model with the train set and predict with the test set. 
-
 
 ### 4.3 Linear discriminant analysis
 
-[Linear discriminant analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) is a statistical method that tries to find linear combinations of explanatory variables and group them in differences that are as large as possible. It weighs the explanatory variables (predictors), creates functions out of it (so-called linear discriminant functions, *i. e.*, LD1, LD2, LD3, see below) and distinguishes them as much as possible. 
+[Linear discriminant analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) is a statistical method that tries to find linear combinations of explanatory variables and group them in differences that are as large as possible. It weighs the explanatory variables (predictors), creates functions out of it (so-called linear discriminant functions, *i. e.*, LD1, LD2, LD3, see below) and distinguishes them as much as possible.
+
+From the summary below, we can see that based on the training data, 25 % of the data set belongs to the low group, 25 % to med_low, 24% to med_high and 26% to high, respectively ("Prior probabilities of groups"). The proportion of trace shows the between-class variance in the different linear discriminant functions. Hence, 96.5% of the between-class variance is explained by the first linear discriminant function (LD1). The coefficients (of linear discriminants) indicate that *rad* (index of accessibility to radial highways) is very well represented in LD1 (4.06) compared to all other variables ranging around 0. 
 
 ```{r}
 # crime = target variable, . = all other (explanatory) variables
@@ -134,15 +136,9 @@ classes <- as.numeric(train$crime)
 # plot the lda results (select both lines and execute them at the same time!)
 plot(lda.fit, dimen = 2, col = classes, pch = classes)
 lda.arrows(lda.fit, myscale = 1)
-
-# save the correct classes from test data
-correct_classes <- test$crime
-# remove the crime variable from test data
-test <- dplyr::select(test, -crime)
-
 ```
 
-From the summary above ("Prior probabilities of groups"), we can see that based on the training data, 25 % of the data set belongs to the low group, 25 % to med_low, 24% to med_high and 26% to high, respectively. The proportion of trace shows the between-class variance in the different linear discriminant functions. Hence, 96.5% of the between-class variance is explained by the first linear discriminant function (LD1). The coefficients (of linear discriminants) indicate that *rad* (index of accessibility to radial highways) is very well represented in LD1 (4.06) compared to all other variables ranging around 0. This is confirmed by looking at the plot, where *rad* seems to be the only variable strongly influencing LD1. We can also see the groups of observations vary a lot in LD1 (x-axis), especially the *high* group clustered on the other end. LD2 (y-axis) does not show a discriminative power, so does not capture / group the differences in the explanatory variables well. 
+This is confirmed by looking at the plot, where *rad* seems to be the only variable strongly influencing LD1. We can also see the groups of observations vary a lot in LD1 (x-axis), especially the *high* group clustered on the other end. LD2 (y-axis) does not show a discriminative power, so does not capture / group the differences in the explanatory variables well. 
 
 ### 4.4 Predictions
 
@@ -150,6 +146,10 @@ After training the model, we can now predict classes with the LDA model on the t
 
 
 ```{r}
+# save the correct classes from test data
+correct_classes <- test$crime
+# remove the crime variable from test data
+test <- dplyr::select(test, -crime)
 # predict classes with test data
 lda.pred <- predict(lda.fit, newdata = test)
 # cross tabulate the results
@@ -167,7 +167,7 @@ To state whether objects are similar to one another or not, we can also measure 
 
 [K-means clustering](https://en.wikipedia.org/wiki/K-means_clustering) is a commonly used clustering method to assign observations to groups (a. k. a. clusters) based on how similar they are. 
 
-```{r, fig.height= 14, fig.width= 14, message = FALSe}
+```{r, fig.height= 14, fig.width= 14, message = FALSE}
 # reload Boston data set
 library(MASS)
 data("Boston")
@@ -195,9 +195,9 @@ pairs(boston_scaled, col = km$cluster)
 
 ```
 
-From the different plots above, 4 clusters seem to represent the differences in the explanatory variables relatively well. Rather than manually trying to find the optimal k for the k-means, however, we can determine the number of clusters by looking at the changes of the total of within cluster sum of squares (WCSS). The optimal number of clusters is when we can see a radical drop in TWCSS (see below).
+From the different plots above, 4 clusters seem to represent the differences in the explanatory variables relatively well. Rather than manually trying to find the optimal k for the k-means, however, we can determine the number of clusters by looking at the changes of the total of within cluster sum of squares (WCSS). The optimal number of clusters is when we can see a radical drop in TWCSS, which seems to be around 2 (see below).
 
-```{r}
+```{r, message = FALSE}
 # Work with the exercise in this chunk, step-by-step. Fix the R code!
 # MASS, ggplot2 and Boston dataset are available
 set.seed(123)
@@ -210,13 +210,6 @@ twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled, k)$tot.withinss})
 
 # visualize the results
 qplot(x = 1:k_max, y = twcss, geom = 'line')
-
-# k-means clustering
-km <- kmeans(boston_scaled, centers = 2)
-
-# plot the Boston dataset with clusters
-pairs(boston_scaled, col = km$cluster)
-
 
 ```
 

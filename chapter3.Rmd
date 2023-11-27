@@ -1,8 +1,8 @@
-# Logistic regression
+# 3. Logistic regression
 
 *This file describes the work and results of the third week a. k. a. "Logistic regression" of the IDOS2023 course.*
 
-### Information on dataset
+### 3.1 Information on data set
 
 The original data set includes data from student performances in the subjects "Mathematics" and "Portuguese language" in secondary education (high school) in two Portuguese schools. It was collected through school reports and questionnaires, and gives information on the demographic and social background of the students, as well as student grades and data on the school they visit (click [here](https://archive.ics.uci.edu/dataset/320/student+performance) to see more information on the data set and access the data). One of the collected variables concerns the alcohol consumption of the students. 
 
@@ -17,9 +17,9 @@ dim(alc)      # dimension of data
 
 ```
 
-### Analysis 
+### 3.2 Analysis 
 
-#### Aim
+#### 3.2.1 Aim
 
 The aim of my analysis is to study the relationships between high / low alcohol consumption and the gender of the students ("sex", female / male), if they go out with friends often ("goout", 1 - very low to 5 - very high), if they miss school often ("absences", number of school absences), and how well they performed in their final grades ("G3", 0 to 20). My personal hypotheses are as follows: 
 
@@ -28,7 +28,7 @@ The aim of my analysis is to study the relationships between high / low alcohol 
 3. The more classes the students miss, the more likely they drink (= The higher the number of school absences, the more likely is a high alcohol consumption.).
 4. The more the students drink, the lower their final grade is (= Students showing high consumption of alcohol have lower results in their final grade). 
 
-#### Numerical and graphical exploration 
+#### 3.2.2 Numerical and graphical exploration 
 
 The numerical exploration of our data shows that most students fall under the category of low alcohol consumption (< 2). Females and males are almost equally distributed (195 and 175, respectively). It is evident that in *goout* and *absences*, most students are clustered in the categories 3 and 4 (see medians). It is only with the means that we can see some differences. 
 
@@ -83,7 +83,7 @@ Concerning my hypotheses, this means the following:
 3. Females seem to miss school more often than males but for both genders, the same trend is evident: they show a high use of alcohol with a higher number of absences. I can assume that my third hypothesis can be accepted.
 4. Males who show a high alcohol consumption achieve lower grades in their final exam compared to those with low alcohol consumption (10.3 and 12.3, respectively). For females, the differences in the final grades are smaller and show an opposite trend: with high alcohol consumption, the final grades are slightly higher than with low alcohol consumption (11.8 and 11.4, respectively). My fourth hypothesis, that high alcohol consumption results in lower final grades, can therefore only be accepted partially. 
 
-#### Logistic regression model 
+#### 3.2.3 Logistic regression model 
 
 We use a logistic regression to statistically explore the relationship between the binary high / low alcohol consumption variable as the target variable, and the explanatory variables gender (*sex*), how often students go out (*goout*), their absences at school (*absences*), and their final grades (*G3*). 
 
@@ -114,7 +114,7 @@ cbind(OR, CI)
 
 The odds ratios show that the odds that males have a high alcohol consumption are 2.8 with a 95 % confidence interval ranging from 1.7 to 4.6. Similarly, the odds of students going out more having a high alcohol consumption are 2 with a confidence interval ranging between 1.6 and 2.6. 
 
-#### Predictions 
+#### 3.2.4 Predictions 
 
 With our logistic regression model, it is possible to make predictions, and explore how well the models actually predicts the target variable *high alcohol consumption*. We can do this proving a 2x2 cross tabulation of predictions versus the actual values, and a graphic visualisation of predictions and actual values (see below). To improve our model, we remove the explanatory variable that didn't have a significant relationship with the alcohol consumption (*G3*). 
 
@@ -162,7 +162,7 @@ loss_func(class = alc$high_use, prob = 1)
 
 ```
 
-#### Cross-validation
+#### 3.2.5 Cross-validation
 
 [Cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)) is a method which we can use to get a good estimate of the actual predictive power and the model. We can also use it to compre different models. As we can see below, my model shows an error of 0.21 with a 10-fold cross-validation. This is lower than the model in the Exercise set (error = 0.26). 
 

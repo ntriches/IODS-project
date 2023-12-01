@@ -2,7 +2,7 @@
 # 27 November 2023
 # File used to create data set and perform data analysis (week 5) as part of the IODS 2023 course at Helsinki Uni
 
-# Data wrangling 
+# Data wrangling 1 ####
 # 1. create R script 
 # 2. read files
 library(readr)
@@ -49,11 +49,52 @@ human <- merge(hd_renamed, gii_mutated)
 # save in data folder
 write_csv(human, "/home/ntriches/github_iods2023/IODS23/data/human.csv",
             na = "..")  
-# double check if it worked
-# remove created human file
-rm(human)
+
+
+# Data wrangling 2 ####
 # load saved file from above
 human <- read.csv(file='/home/ntriches/github_iods2023/IODS23/data/human.csv', header=TRUE, na = "..")
 # check if file was loaded correctly 
 head(human) # yes
 dim(human)  # yes
+
+# 1. explore and briefly describe data set ####
+str(human)     # 195 obs (rows) and 19 variables (columns)
+dim(human)
+
+# The 'human' dataset comes from the United Nations Development Programme. It uses the HDI (Human Development Index)
+# to assess the development on a country according to citizen attributes, not only economic growth. 
+# More information on HDI can be found here: https://hdr.undp.org/data-center/human-development-index#/indicies/HDI
+# Original data from: http://hdr.undp.org/en/content/human-development-index-hdi
+
+# For this assignment, I renamed all original variables as shown in code lines 23- 40 above
+
+# 2. exclude variables ####
+library(dplyr)
+human_excluded <- human %>%
+  rename("Edu2.FM" = "Ratio.Edu2",
+         "Labo.FM" = "Ratio.Labo") %>%
+  select("Country", "Edu2.FM", "Labo.FM", "Edu.Exp", "Life.Exp", "GNI", "Mat.Mor", "Ado.Birth", "Parli.F")
+
+# 3. remove rows with missing values (NA)
+human_excluded_noNA <- human_excluded %>%
+  na.omit()
+
+# 4. remove obs of regions 
+# regions are: "Arab States", "East Asia and the Pacific", "Europe and Central Asia", "Latin America and the Caribbean",
+# "South Asia", "Sub-Saharan Africa" (source: https://hdr.undp.org/data-center/human-development-index#/indicies/HDI)
+
+human_exluced_noNA_noregions <- human_excluded_noNA %>%
+  filter(Country != "Arab States") %>%
+  filter(Country != "East Asia and the Pacific") %>%
+  filter(Country != "Europe and Central Asia") %>%
+  filter(Country != "Latin America and the Caribbean") %>%
+  filter(Country != "South Asia") %>%
+  filter(Country != "Sub-Saharan Africa") %>%
+  filter(Country != "World")
+  
+# save human data in data folder
+# save in data folder
+library(readr)
+write_csv(human_exluced_noNA_noregions, "/home/ntriches/github_iods2023/IODS23/data/human.csv")
+

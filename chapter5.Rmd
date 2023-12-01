@@ -1,0 +1,47 @@
+Data wrangling (max 5 points)
+
+We will continue to work with the human data wrangled last week. At this point, the joined data should have 195 observations and 19 variables. 
+
+In case you did not complete the data wrangling exercise last week, you can open the data for this week's wrangling exercise as follows:
+
+library(readr)
+human <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human1.csv")
+
+To complete the data wrangling part, continue working on your create_human.R from last week (begin by loading again the 'human' data in R; use again read_csv from the readr package, cf. above) or create a new script file with that name (include your name, file description and link to original data source as a comment at the top of the file).
+
+    Explore the structure and the dimensions of the 'human' data and describe the dataset briefly, assuming the reader has no previous knowledge of it (this is now close to the reality, since you have named the variables yourself). (1 point)
+
+    Exclude unneeded variables: keep only the columns matching the following variable names (described in the meta file above):  "Country", "Edu2.FM", "Labo.FM", "Edu.Exp", "Life.Exp", "GNI", "Mat.Mor", "Ado.Birth", "Parli.F" (1 point)
+
+    Remove all rows with missing values (1 point).
+
+    Remove the observations which relate to regions instead of countries. (1 point)
+
+    The data should now have 155 observations and 9 variables (including the "Country" variable). Save the human data in your data folder. You can overwrite your old ‘human’ data. (1 point)
+
+Analysis (max 15 points)
+
+In case you did not complete the data wrangling part, you can open the data for this week's analysis exercise as follows:
+
+library(readr)
+human <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human2.csv")
+
+Create a new R Markdown file and save it as an empty file named ‘chapter5.Rmd’. Then include the file as a child file in your ‘index.Rmd’ file. Perform the following analysis in the file you created.
+
+    Move the country names to rownames (see Exercise 5.5). Show a graphical overview of the data and show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them. (0-3 points)
+
+    Perform principal component analysis (PCA) on the raw (non-standardized) human data. Show the variability captured by the principal components. Draw a biplot displaying the observations by the first two principal components (PC1 coordinate in x-axis, PC2 coordinate in y-axis), along with arrows representing the original variables. (0-2 points)
+
+    Standardize the variables in the human data and repeat the above analysis. Interpret the results of both analysis (with and without standardizing). Are the results different? Why or why not? Include captions (brief descriptions) in your plots where you describe the results by using not just your variable names, but the actual phenomena they relate to. (0-4 points)
+
+    Give your personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data. (0-2 points)
+
+    The tea data comes from the FactoMineR package and it is measured with a questionnaire on tea: 300 individuals were asked how they drink tea (18 questions) and what are their product's perception (12 questions). In addition, some personal details were asked (4 questions).
+
+    Load the tea dataset and convert its character variables to factors:
+
+    tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+
+    Explore the data briefly: look at the structure and the dimensions of the data. Use View(tea) to browse its contents, and visualize the data.
+
+    Use Multiple Correspondence Analysis (MCA) on the tea data (or on just certain columns of the data, it is up to you!). Interpret the results of the MCA and draw at least the variable biplot of the analysis. You can also explore other plotting options for MCA. Comment on the output of the plots. (0-4 points)

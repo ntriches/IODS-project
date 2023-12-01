@@ -68,10 +68,10 @@ human <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Op
 names(human)
 
 # look at the structure of human
-
+str(human)
 
 # print out summaries of the variables
-
+summary(human)
 
 ```
 
@@ -124,13 +124,13 @@ keep <- c("Country", "Edu2.FM", "Labo.FM", "Life.Exp", "Edu.Exp", "GNI", "Mat.Mo
 human <- select(human, one_of(keep))
 
 # print out a completeness indicator of the 'human' data
-complete.cases(human)
+NAs <- complete.cases(human)
 
 # print out the data along with a completeness indicator as the last column
-data.frame(human[-1], comp = "change me!")
+data.frame(human[-1], comp = TRUE)
 
 # filter out all rows with NA values
-human_ <- filter(human, TRUE) # modify the "TRUE", see instructions above!
+human_ <- filter(human, NAs) # modify the "TRUE", see instructions above!
 
 ```
 
@@ -176,13 +176,13 @@ Hint:
 # human without NA is available
 
 # look at the last 10 observations of human
-
+tail(human_)
 
 # define the last indice we want to keep
-last <- nrow(human) - 7
+last <- nrow(human_) - 7
 
 # choose everything until the last 7 observations
-human_ <- human["change me!", ]
+human_2 <- human_[1:last, ]
 
 ```
 
@@ -233,13 +233,18 @@ human_ <- column_to_rownames(human, "Country")
 library(GGally)
 
 # visualize the 'human_' variables
-
+ggpairs(human_, progress = FALSE)
 
 # Access corrplot
 library(corrplot)
 
 # compute the correlation matrix and visualize it with corrplot
-cor(human_)
+cor_matrix <- cor(human_) %>%
+  round(digits = 2)
+
+# visualise the correlation matrix
+corrplot(cor_matrix, method="circle", type = "upper", cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
+
 
 ```
 
@@ -283,14 +288,19 @@ Hint:
 human_std <- scale(human)
 
 # print out summaries of the standardized variables
-
+summary(human_std)
 
 # perform principal component analysis (with the SVD method)
 pca_human <- prcomp(human_std)
+pca_human
+
+#calculate total variance explained by each principal component
+pca_human$sdev^2 / sum(pca_human$sdev^2)
+
 
 # draw a biplot of the principal component representation and the original variables
-biplot(pca_human, choices = 1:2)
-
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
+?biplot
 
 ```
 
@@ -336,13 +346,13 @@ Hints:
 
 # create and print out a summary of pca_human
 s <- summary(pca_human)
+s
 
-
-# rounded percentanges of variance captured by each PC
+# rounded percentages of variance captured by each PC
 pca_pr <- round(1*s$importance[2, ], digits = 5)
 
 # print out the percentages of variance
-
+pca_pr
 
 # create object pc_lab to be used as axis labels
 paste0(names(pca_pr), " (", pca_pr, "%)")
@@ -394,15 +404,18 @@ library(tidyr)
 keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
 
 # select the 'keep_columns' to create a new dataset
-tea_time <- select(tea, "change me!")
+tea_time <- select(tea, keep_columns)
 
 # look at the summaries and structure of the data
-
+str(tea_time)
+summary(tea_time)
 
 # visualize the dataset
 library(ggplot2)
 pivot_longer(tea_time, cols = everything()) %>% 
-  ggplot(aes(value)) + facet_wrap("name", scales = "free")
+  ggplot(aes(value)) + facet_wrap("name", scales = "free") +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
 
 
 ```
@@ -439,13 +452,13 @@ Hint:
 
 # multiple correspondence analysis
 library(FactoMineR)
-mca <- MCA("change me!", graph = FALSE)
+mca <- MCA(tea_time, graph = FALSE)
 
 # summary of the model
-
+summary(mca)
 
 # visualize MCA
-plot("change me!", invisible=c("ind"), graph.type = "classic")
+plot(mca, invisible=c("ind"), graph.type = "classic", habillage = "quali")
 
 ```
 

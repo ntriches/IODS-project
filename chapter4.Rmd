@@ -213,22 +213,3 @@ qplot(x = 1:k_max, y = twcss, geom = 'line')
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

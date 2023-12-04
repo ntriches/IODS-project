@@ -81,20 +81,14 @@ human_excluded_noNA <- human_excluded %>%
   na.omit()
 
 # 4. remove obs of regions 
-# regions are: "Arab States", "East Asia and the Pacific", "Europe and Central Asia", "Latin America and the Caribbean",
-# "South Asia", "Sub-Saharan Africa" (source: https://hdr.undp.org/data-center/human-development-index#/indicies/HDI)
+regions <- c("Arab States", "East Asia and the Pacific", "Europe and Central Asia", "Latin America and the Caribbean",
+             "South Asia", "Sub-Saharan Africa", "World")
 
-human_exluced_noNA_noregions <- human_excluded_noNA %>%
-  filter(Country != "Arab States") %>%
-  filter(Country != "East Asia and the Pacific") %>%
-  filter(Country != "Europe and Central Asia") %>%
-  filter(Country != "Latin America and the Caribbean") %>%
-  filter(Country != "South Asia") %>%
-  filter(Country != "Sub-Saharan Africa") %>%
-  filter(Country != "World")
+human_excluded_noNA_noregions <- human_excluded_noNA %>%
+  filter(!Country %in% regions)
   
 # save human data in data folder
 # save in data folder
 library(readr)
-write_csv(human_exluced_noNA_noregions, "/home/ntriches/github_iods2023/IODS23/data/human.csv")
+write_csv(human_excluded_noNA_noregions, "/home/ntriches/github_iods2023/IODS23/data/human.csv")
 

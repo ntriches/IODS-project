@@ -1,31 +1,34 @@
-# 4. Dimensionality reduction techniques
+# 5. Dimensionality reduction techniques
 
 *This file describes the work and results of the fifth week a. k. a. "Dimensionality reduction techniques" of the IDOS2023 course.*
 
-### 4.1 Graphical and numerical overview of data 
+### 5.1 Graphical and numerical overview of data 
 
-The data shows that the mean life expectancy at birth (*Life.Exp*) varies a lot, with a minimum of 49 years, a median of 74 years, and a maximum of 83 years, respectively. A high percentage of the population enjoys secondary education, both Female and Male (*Edu2.FM*), with a median of 93%. This is also well represented with the expected years of education (*Edu.Exp*) being around 13 years. The labour force participation rate (*Labo.FM*) shows a median of 75%. The representation of women in the parliament varies from none (min = 0) to a maximum of 57%. On average, every fifth member of a parliament is female. 
+The 'human' data set comes from the United Nations Development Programme a d uses the HDI (Human Development Index)
+to assess the development on a country according to citizen attributes, not only economic growth (more information here: https://hdr.undp.org/data-center/human-development-index#/indicies/HDI). 
 
-Many of the variables show some correlation. From the correlation matrix, we can see that *Life.Exp* and *Mat.Mor* have a strong relative correlation (-0.86). Also *Edu.Exp* and *Mat.Mor*, *Edu.Exp* and *Ado.Birth*, and *Life.Exp* and *Ado.Birth* are negatively correlated with -0.74, -0.7, and -0.73, respectively. On the other hand, *Edu.Exp* and *Life.Exp*, and *Mat.Mor* and *Ado.Birth* and strongly positively correlated witz 0.79 and 0.76, respectively. According to the black-and-white plots from ggpairs, all these relationships are significant. Looking at the distribution of our variables, we can see that *Edu.Exp* is the only normally distributed variable. *GNI* and *Mat.Mor* are strongly right skewed, and so are *Ado.Birth* and *Parli.F*, although to a lesser extent. Both *Labo.FM* and *Life.Exp* are left skewed.
+The data shows that the mean life expectancy at birth (*Life.Exp*) varies a lot, with a minimum of 49 years, a median of 74 years, and a maximum of 83 years, respectively (see summary below). A high percentage of the population enjoys secondary education, both Female and Male (*Edu2.FM*). This is also well represented with the expected years of education (*Edu.Exp*) being around 13 years. The labour force participation rate (*Labo.FM*) shows a median of 75%. The representation of women in the parliament varies from none (min = 0) to a maximum of 57%. On average, every fifth member of a parliament is female. 
+
 
 ```{r, message = FALSE, fig.height = 14, fig.width= 14}
 # access all packages needed in this chunk
 library(dplyr)
 library(readr)
 library(tibble)
+library(GGally)
 library(corrplot)
 
 # load in data
 human <- read.csv(file='/home/ntriches/github_iods2023/IODS23/data/human.csv', header=TRUE)
 
 # move the country names to rownames
-human_ <- column_to_rownames(human, "Country")
+human_country_as_row <- column_to_rownames(human, "Country")
 
 # summary
-summary(human_)
+summary(human_country_as_row)
 
 # visualize the 'human_' variables
-plot_corr_humans <- human_ %>%
+plot_corr_humans <- human_country_as_row %>%
   ggpairs(progress = FALSE,
         upper = list(continuous = wrap("cor", size = 9)))
 # plot corr_humans and adjust font size
@@ -34,7 +37,7 @@ plot_corr_humans +
         strip.text = element_text(size = 20))
 
 # compute the correlation matrix and visualize it with corrplot
-cor_matrix <- cor(human_) %>%
+cor_matrix <- cor(human_country_as_row) %>%
   round(digits = 2)
 
 # visualise the correlation matrix
@@ -47,9 +50,12 @@ plot_cor_matrix <- cor_matrix %>%
 
 ```
 
-### 4.2 Principal component analysis (PCA)
+Many of the variables show some correlation (see above). From the correlation matrix, we can see that *Life.Exp* and the Maternal mortality ratio (*Mat.Mor*) have a strong relative correlation (-0.86). Also the Expected years of schooling (*Edu.Exp*) and *Mat.Mor*, *Edu.Exp* and Adolescent birth rate (*Ado.Birth*), and *Life.Exp* and *Ado.Birth* are negatively correlated with -0.74, -0.7, and -0.73, respectively. On the other hand, *Edu.Exp* and *Life.Exp*, and *Mat.Mor* and *Ado.Birth* and strongly positively correlated witz 0.79 and 0.76, respectively. According to the black-and-white plots from ggpairs, all these relationships are significant. Looking at the distribution of our variables, we can see that *Edu.Exp* is the only normally distributed variable. Gross National Income per capita (*GNI*) and *Mat.Mor* are strongly right skewed, and so are *Ado.Birth* and *Parli.F*, although to a lesser extent. Both *Labo.FM* and *Life.Exp* are left skewed.
 
-Principal component analysis (PCA) helps us to summarise and visualise data with more than three dimensions. It is therefore a statistical approach that can be used to analyse high-dimensional data and capture the most important information from it. In that way, linear combinations of original predictions are changed into principal components that explain a large portion of the variation in a dataset.
+
+### 5.2 Principal component analysis (PCA)
+
+Principal component analysis (PCA) helps us to summarise and visualise data with more than three dimensions. It is a statistical approach that can be used to analyse high-dimensional data and capture the most important information from it. In that way, linear combinations of original predictions are changed into principal components that explain a large portion of the variation in a data set.
 
 Sources: 
 https://www.datacamp.com/tutorial/pca-analysis-r
@@ -57,76 +63,164 @@ https://www.statology.org/principal-components-analysis-in-r/
 https://www.datacamp.com/tutorial/pca-analysis-r
 http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/112-pca-principal-component-analysis-essentials/
 
-#### 4.2.1 PCA on non-standardised data
+#### 5.2.1 PCA on non-standardised data
 
-We can see that all values are very low in all principal components (*PC* 1-8).
+First, we perform PCA on the raw human data. We can see that all values are very low in all principal components (*PC* 1-8 in summary on top). From the resulting biplot (see below), it seems that only *GNI* has an influence in the first principal component (*PC1*), and that all other variables are clustered. This can be seen on the horizontal x-axis, which represents *PC1*, where *GNI* stands alone on one side of the graph. 
 
+```{r, message = FALSE, warning=FALSE, fig.width=14, fig.height=14}
 
-"Perform principal component analysis (PCA) on the raw (non-standardized) human data. Show the variability captured by the principal components. Draw a biplot displaying the observations by the first two principal components (PC1 coordinate in x-axis, PC2 coordinate in y-axis), along with arrows representing the original variables."
-
-```{r, message = FALSE}
-# perform principal component analysis (with the SVD method)
-pca_human <- prcomp(human_)
+# perform principal component analysis 
+pca_human <- prcomp(human_country_as_row, )
 pca_human
 
-#calculate total variance explained by each principal component
-pca_human$sdev^2 / sum(pca_human$sdev^2)
+# create and print out a summary of pca_human
+s <- summary(pca_human)
+
+# rounded percentages of variance captured by each PC
+pca_pr <- round(1*s$importance[2, ], digits = 5)
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+paste0(names(pca_pr), " (", pca_pr, "%)")
 
 # draw a biplot of the principal component representation and the original variables
-biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
-?biplot
+biplot(pca_human, choices = 1:2, cex = c(2, 2), col = c("grey40", "deeppink2"), 
+       xlab = "Principal component 1", ylab = "Principal component 2",
+       sub = "The non-standardised, raw data varies largely in scales. This leads to two very different axis scales from -0.2 to 1.0 and -2000 to 100000, making it hard to summarise the whole data set.")
+
+
 
 ```
 
 
+#### 5.2.2 PCA on standardised data 
 
-#### 4.2.2 PCA on standardised data 
+When we standardise the data, we can see in the summary that in the first principal component (*PC1*), several variables show similar values, indicating that *PC1* explains around a third to half of the variation in most variables. *PC2* shows the highest values for *Labo.FM* and *Parli.F*, indicating that this PC describes the most variation in these variables (-0.72 and -0.65, respectively). When we print the percentages of the variance, we can see that *PC1* explains around 54%, and *PC2* around 16% of the variance, respectively. 
 
-We can see that the first principal component (*PC1*) has the highest values for *Edu.Exp* and *Life.Exp*, indicating that this PC describes the most variation in these variables. *PC2* shows the 
+```{r, message = FALSE, fig.width=14, fig.height=14}
+# scale human data 
+human_std <- scale(human_country_as_row)
+pca_human <- prcomp(human_std)
+pca_human
 
-"Standardize the variables in the human data and repeat the above analysis. Interpret the results of both analysis (with and without standardizing). Are the results different? Why or why not? Include captions (brief descriptions) in your plots where you describe the results by using not just your variable names, but the actual phenomena they relate to. (0-4 points)"
+# create and print out a summary of pca_human
+s <- summary(pca_human)
 
+# rounded percentages of variance captured by each PC
+pca_pr <- round(1*s$importance[2, ], digits = 5)
 
-```{r, message = FALSE}
-# standardize the variables
-human_std <- scale(human_)
+# print out the percentages of variance
+pca_pr
 
-# print out summaries of the standardized variables
-summary(human_std)
+# create object pc_lab to be used as axis labels
+paste0(names(pca_pr), " (", pca_pr, "%)")
 
-# perform principal component analysis (with the SVD method)
-pca_human_std <- prcomp(human_std)
-pca_human_std
-
-#calculate total variance explained by each principal component
-pca_human$sdev^2 / sum(pca_human$sdev^2)
-
-# draw a biplot of the principal component representation and the original variables
-biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
-?biplot
-
+# draw a biplot
+plot <- biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), 
+               xlab = "Principal component 1: Poor countries with no women rights (left) vs. rich countries with high education and life expectancy", ylab = "Women in work and politics",
+       sub = "The standardised, scaked data reduces the large variation in scales. This allows the principal components to better represent the variation in the original data set.") 
 ```
 
+In the biplot above, we can see that *Labo.RM* and *Parli.F* are located very close to each other, but that also *Mat.Mor* and *Ado.Birth*, and *Edu.Exp*, *Edu.FM*, *Life.Exp*, and *GNI* are very clustered. Looking at the different axes (*PC1* = x-axis, *PC2* = y-axis), we can again see that the *PC1* differentiates largely between *Ado.Birth* and *Mat.Mor* as one group on the left and *Life.Exp*, *Edu.Exp*, *Edu2.FM*, and *GNI* as another group on the right. A third group is represented by *Labo.FM* and *Parli.FM*. The latter is the only group where *PC2* captures a difference in the variance compared to all other variables. 
 
+As evident in the two biplots, the results from the raw and standardised data are very different. Looking back at the raw data, we can see that the different variables vary largely in scales. While *Edu2.FM* and *Labo.FM* range from 0.17 to 1.50 and 0.19 to 1.04, respectively, *GNI* ranges from 581 to 123124. The within-variable range and scale therefore differ widely. Since the variance in *GNI* is so large both in distance and number, it dominates the PCA when the variables are not scaled. In the scaled data set, however, it is possible to capture the differences in the variance of the variables since their values are much closer to one another. This allows us to better visualise the important information and groups in the data set. 
 
+A proper pnterpretation of the PCA is difficult. Nevertheless, it can be assumed that the maternal mortality ratio (*Mat.Mor*) and adolescent birth rate (*Ado.Birth*) are clustered around countries such as Liberia, Congo, Chad, and the Central African Republic because women might not have access to education and/ or contraceptives. As a result, women seem get pregnant very early (between 10 and 14 years old), but risk death die during birth. The cluster of *Life.Exp*, *Edu.Exp*, *Edu2.FM*, and *GNI* might indicate that the higher the life expectancy and expected years of schooling, the higher the Gross National Income per capita. Since most countries situated on the right of the biplot are developed countries with a high GNI, this interpretation seems likely. *Labo.FM* and *Parli.F* are most likely clustered because women are much more likely to be involved in politics if they work.      
 
-"Give your personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data. (0-2 points)"
+### 5.3 Multipe Correspondence Analysis (MCA)
 
+The Multiple Correspondence Analysis (MCA) is a generalisation of PCA, and used when the variables to be analysed are categorical instead of quantitative. The goal is to identify groups of individuals with similar answers to asked questions, and the associations between the categories of the variables. 
 
-### 4.3 Multipe Correspondence Analysis (MCA)
-
-
-
-
-"The tea data comes from the FactoMineR package and it is measured with a questionnaire on tea: 300 individuals were asked how they drink tea (18 questions) and what are their product's perception (12 questions). In addition, some personal details were asked (4 questions).
-
-Load the tea dataset and convert its character variables to factors:
-
-tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
-
-Explore the data briefly: look at the structure and the dimensions of the data. Use View(tea) to browse its contents, and visualize the data.
-
-Use Multiple Correspondence Analysis (MCA) on the tea data (or on just certain columns of the data, it is up to you!). Interpret the results of the MCA and draw at least the variable biplot of the analysis. You can also explore other plotting options for MCA. Comment on the output of the plots. (0-4 points)"
-
+To show how MCA works, we use the tea data from the FactoMineR package. In this data set, 300 people (observations / rows) were asked 4 personal questions, 18 questions on how they drink tea, and 12 questions on how they perceive the products. To simplify our analysis, we choose six (6 columans) variables in our MCA, of which all are categorical levels. From the summary, we can see what kind of tea they chose to drink, how they drank it, when they drank it and where they got the tea from. The distribution is well-shown in the histograms below.
 
 Source: http://sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/114-mca-multiple-correspondence-analysis-in-r-essentials
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=14, fig.height=14}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+
+# plot whole data set
+# tea %>% 
+#      gather() %>% 
+#      ggplot(aes(x=value)) + geom_histogram(binwidth = 1, stat="count") + facet_wrap('key', scales='free')
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset with the variables we want to look at
+tea_time <- dplyr::select(tea, keep_columns)
+
+# look at the summaries and structure of the data
+str(tea_time)
+summary(tea_time)
+
+# visualize the dataset
+library(ggplot2)
+pivot_longer(tea_time, cols = everything()) %>% 
+  ggplot(aes(value)) + facet_wrap("name", scales = "free") +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+
+
+There are several ways to assess the results of the MCA. If we want to know the proportion of variances retained by different dimensions, we can look at the so-called screeplot. There, we can see that the first dimension (*Dim. 1*) explains 15.2% of the variance in the data set, *Dim. 2* 14.2%, and so on. To explain all the variation in the data set, 11 dimensions are needed (see summary output from *eig.val*). 
+
+
+```{r, message=FALSE, warning=FALSE}
+# multiple correspondence analysis
+library(FactoMineR)
+mca <- MCA(tea_time, graph = FALSE)
+
+#install.packages("factoextra")
+library(factoextra)
+# get proportion of variances retained by different dimensions 
+eig.val <- get_eigenvalue(mca)
+eig.val
+# screeplot
+fviz_screeplot(mca, addlabels = TRUE) # visualise percentages of variances 
+```
+
+To see how well the variable categories are represented, we can use the squared cosine (cos2). Cos2 indicates how much the variable categories are correlated with a particular axis (or principal component) by measuring the degree of association. If a variable category is well represented by two dimensions, the sum of the cos2 is closed to one. For some variables, more than 2 dimensions are required to perfectly represent the data. Luckily, it is possible to to show a colour gradient in a factor map which greatly facilitates assessing the quality of representation (see below). Low cos2 values are coloured in white, mid values in blue, and high cos2 values in red, respectively. From our plot, we can see that the variable categories are generally not very well represented. The location where the tea was bought seems to be best represented, but all other variables show low cos2 values. 
+
+```{r, message=FALSE, warning=FALSE}
+# extract results for variable categories
+var <- get_mca_ind(mca)
+# Cos2: quality on the factor map (cos2)
+head(var$cos2)
+# plot cos2 
+fviz_mca_var(mca, col.var = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE, # Avoid text overlapping
+             ggtheme = theme_minimal())
+
+# Contributions to the principal components
+# Contributions of rows to dimension 1
+fviz_contrib(mca, choice = "var", axes = 1, top = 15)
+# Contributions of rows to dimension 2
+fviz_contrib(mca, choice = "var", axes = 2, top = 15)
+# Total contribution to dimension 1 and 2
+fviz_contrib(mca, choice = "var", axes = 1:2, top = 15)
+
+# The most important (or, contributing) variable categories can be highlighted on the scatter plot as follow:
+fviz_mca_var(mca, col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE, # avoid text overlapping (slow)
+             ggtheme = theme_minimal()
+             )
+
+```
+
+Using histograms, we can evaluate the contributions of each variable to the dimensions 1 and 2 individually and combined (see above). In *dim 1*, *tea shop*, *unpackaged*, *tea bag*, and *chain store* contribute the most to the dimensions. In *dim 2*, *chain store+tea shop*, *tea bag+unpacked*, *tea shop*, *unpackaged*, *other*, and *green* are above the expected average value if contributions were uniform (red dashed line). The combined plot adds shows that *tea shop*, *unpackaged*, and *chain store+tea shop* are the most important contributions, which is again showed in a coloured scatter plot.
+
+```{r, message=FALSE, warning=FALSE}
+# visualize MCA
+plot(mca, invisible=c("ind"), graph.type = "classic", habillage = "quali")
+
+```
+
+
+Finally, we can visualise the MCA factor map (see above). The different colours show the six variable groups we chose in the beginning. Again, *tea shop* and *unpackaged* somewhat stand alone. According to *Dim 1*, we could interpret that the more "sofisticated" tea drinkers greatly enjoy good quality tea, and would rather buy unpackaged tea in a tea shop. On the other hand, "modest" tea drinkers would buy tea bags in a chain store. According to *Dim 2*, there are no great differences between tea bags and unpackaged tea, or where the tea is bought. Here we could suggest that people who drink Earl Grey might more likely add milk and sugar to their tea. 

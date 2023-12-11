@@ -1,0 +1,250 @@
+# 6. Analysis of longitudinal data
+
+*This file describes the work and results of the sixth week a. k. a. "Analysis of longitudinal data" of the IDOS2023 course.*
+
+### 6.1 Simple analysis method on RATS data: Graphical and numerical overview
+
+Many studies in the behavioral sciences involve several measurement or observations of the response variable of interest on each subject in the study. For example, the response variable may be measured under a number of different experimental conditions or on a number of different occasions over time; such data are labelled repeated measures or *longitudinal data*. Longitudinal data poses problems for analysis because the repeated measurements on each subject are very likely to be correlated rather than independent.
+
+Graphical displays of data are almost always useful for exposing patterns in the data, particularly when these are unexpected; this might be of great help in suggesting which class of models might be most sensibly applied in the later more formal analysis. It is important to note that the simple methods should be used only in the initial stage of dealing with the data; more appropriate methods will be discussed in 6.2.
+
+Source: Multivariate Analysis for the Behavioral Sciences, Second Edition (2019), special version for IODS course. Note that the text is not paraphrased.   
+
+#### 6.1.1 Scatter plot 
+
+We perform the first simple analysis on the RATS data set, in which groups of rats were put on different diets to see if the growth profiles differ between the groups. Each rat's body weight (in grams) was recorded approximately every week for a period of 9 weeks, except for week seven, in which two measurements where taken. First, we create a plot where we separate the three different rat groups, showing their weight in grams (y-axis) over the 9-week-period of their diet (see below). 
+
+
+```{r, message = FALSE}
+# load necessary libraries
+library(ggplot2)
+library(dplyr)
+# load in data set
+RATS <- read.csv(file = "/home/ntriches/github_iods2023/IODS23/data/rats.csv", header = TRUE)
+str(RATS) # ID and Group are not factors
+# RATS: factor Id and group 
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+str(RATS)
+summary(RATS)
+
+# plot 
+ggplot(RATS, aes(x = Time, y = Weight, group = ID)) +
+  geom_line(aes(linetype = Group, colour = Group)) +
+  scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10)) +
+  scale_y_continuous(name = "Weight (grams)") +
+  theme(legend.position = "top")
+
+```
+
+
+We can see that rats in group 1 (88 rats, solid red line) were the lightest group, with low within-group variation. Rats in group 2 (44 rats, dashed green line) were heavier and show a massive outlier (top line on the graph). Overall, rats in group 3 (44 rats, dashed blue line) were the heaviest. We can also see that the weight of all rats slightly increased over time, and that large individual differences and variability appear to decrease with time. Another important we can see from the plot above is that rats who were heavier in the start of the diet tend to be heavier at the end of the diet, too. This phenomenon is generally referred to as tracking. To see this more clearly, we can standardise the values of each observation, *i.e.*, the values obtained by subtracting the relevant occasion mean from the original observation and then dividing by the corresponding visit standard deviation:
+
+$$standardised(x) = \frac{x - mean(x)}{ sd(x)}$$
+
+```{r}
+library(tidyr)
+# standardise the variable weight (grams)
+RATS <- RATS %>%
+  group_by(Time) %>%
+  mutate(StdWeight= (Weight - mean(Weight))/sd(Weight)) %>%
+  ungroup()
+# plot again with the standardised weights
+ggplot(RATS, aes(x = Time, y = StdWeight, group = ID)) +
+  geom_line(aes(linetype = Group, colour = Group)) +
+  scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10)) +
+  scale_y_continuous(name = "Standardised Weight") +
+  theme(legend.position = "top")
+
+```
+
+By standardising variables, we can see the scales effect on some variables differently. In this case, however, the overall picture does not show any difference and does not reveal more information. 
+
+
+#### 6.1.2 Summary graphs 
+
+With large numbers of observations, graphical displays of individual response profiles do not show us very much. Instead, we can produce graphs showing us the average (mean) profiles for each treatment group, along with some indication of the variation of the observations at each time point, in this case the standard error of mean:
+
+$$se = \frac{sd(x)}{\sqrt{n}}$$
+
+```{r}
+# Summary data with mean and standard error of weight by group and time (days) 
+# number of ID per group 
+RATS_summary <- RATS %>%
+  group_by(Group, Time) %>%
+    summarise(mean = mean(Weight, na.rm = TRUE),
+              n    = n(),
+              se   = sd(Weight)/sqrt(n)) %>%
+  ungroup()
+
+# Plot the mean profiles
+library(ggplot2)
+ggplot(RATS_summary, aes(x = Time, y = mean, linetype = Group, shape = Group, colour = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2,3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2,3)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.8,0.5)) +
+  scale_y_continuous(name = "mean(Weight) +/- se(Weight)")
+
+```
+
+We can now see that there is some overlap in the mean profiles of group 2 and 3 (see above). To further test the differences between the groups, we can do side-by-side box plots of the observations at each time point (see below). 
+
+```{r}
+# Create a summary data by group and ID with mean as the summary variable 
+RATS_summary_groupID <- RATS%>%
+  group_by(Group, ID) %>%
+  summarise(mean=mean(Weight)) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(RATS_summary_groupID)
+
+# Draw a boxplot of the mean versus treatment
+library(ggplot2)
+ggplot(RATS_summary_groupID, aes(x = Group, y = mean, colour = Group)) +
+  geom_boxplot() +
+  stat_summary(fun = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight)")
+
+# remove outliers in group 1 and 2
+RATS_summary_groupID_noOutliers <- RATS%>%
+  filter(!Weight < 250,
+         !Weight > 550) %>%
+  group_by(Group, ID) %>%
+  summarise(mean=mean(Weight)) %>%
+  ungroup()
+# plot without 2 extreme outliers
+ggplot(RATS_summary_groupID_noOutliers, aes(x = Group, y = mean, colour = Group)) +
+  geom_boxplot() +
+  stat_summary(fun = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight)")
+
+```
+
+From the plots above, we can see that rats in group 1 are considerably lighter than group 2 and 3. Groups 2 and 3 are much closer, with group 2 showing the highest within-group variation of all groups. It is evident that each group has one outlier. In group 1, there seems to be a very light rat, whereas in group 2, a relatively heavy rat is shown as outlier. Also group 3 has an outliers, which is within the variation of group 2. If we remove the two extremer outliers from group 1 and 2, the within-variation in group 2 is highly reduced, and the differences between the groups become larger. Nevertheless, because we can assume that the outliers are a product of real data, I will not remove them from the data set. 
+
+
+#### 6.1.2 Linear model / ANOVA
+
+To test the differences between the groups in a more formal way, we could use ANOVA to estimate how quantitative dependent variables (= mean of Weight) change according to the levels of one or more categorical independent variables (= Group). ANOVA will then test whether there is a difference in the means of the groups at each level of the independent variable. Alternatively, we can use linear models to get the information on the intercept and interactions, as well, which is what we will do. The t-test cannot be used since we have more than two groups.
+
+Source for ANOVA: https://www.scribbr.com/statistics/anova-in-r/
+
+What we saw in the plots above is evident from the regression model: group 2 and 3 are significantly different from group 1 (p < 0.001). There is also a significant positive relationship with *Time* (p < 0.001). When we continue adding a random intercept, intercept and slope, and finally intercept, slope, and interaction, the variation in the data set is represented better in each model. We can see this with the decreasing AIC and BIC values, and the significant differences between the models. As a result, the *RATS_intercept_slope_interaction_model* can be considered as the most accurate model. Looking at the marginal R2, the model appears to explain 92% of the variation in the data. Next to what the regression model already told us, we can see that the interaction between *Time* and *Group* is mostly relevant for group 3. 
+
+```{r, message = FALSE, warning = FALSE}
+library(lme4)
+# install.packages("lmerTest")
+library(lmerTest)
+# create a regression model RATS_reg
+RATS_regression_model <- lm(Weight ~ Time + Group, data = RATS)
+# summary
+summary(RATS_regression_model)
+# create a random intercept model
+RATS_intercept_model <- lmer(Weight ~ Time + Group + (1 | ID), data = RATS, REML = FALSE)
+# create a random intercept and random slope model
+RATS_intercept_slope_model <- lmer(Weight ~ Time + Group + (Time | ID), data = RATS, REML = FALSE)
+# create a random intercept and random slope model with interaction 
+RATS_intercept_slope_interaction_model <- lmer(Weight ~ Time * Group + (Time | ID), data = RATS, REML = FALSE)
+
+# perform an ANOVA test on the models
+anova(RATS_intercept_model, RATS_intercept_slope_model)
+anova(RATS_intercept_slope_model, RATS_intercept_slope_interaction_model)
+
+# install.packages("performance")
+library(performance)
+# show the summary of the last model
+summary(RATS_intercept_slope_interaction_model)
+# show the r2 of the model
+r2(RATS_intercept_slope_interaction_model)
+
+```
+
+### 6.2 Linear Mixed Effects Models on BPRS data
+
+Following up on the models used above (6.1.2.), we will use linear mixed effects models on BPRS data. The BPRS (brief psychiatric rating scale) data gives us information on 40 males in two different treatment groups, which were rated on the BPRS before treatment (week 0) and then at weekly intervals for 8 weeks. The BPRS assesses the level of 18 symptom constructs such as hostility, suspiciousness, hallucinations and grandiosity; each of these is rated from one (not present) to seven (extremely severe).
+
+
+```{r, message = FALSE, warning=FALSE}
+# load in data sets
+BPRS <- read.csv(file = "/home/ntriches/github_iods2023/IODS23/data/bprs.csv", header = TRUE)
+str(BPRS) # treatment and subject are not factors
+# BPRS: factor treatment & subject
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+str(BPRS)
+head(BPRS)
+summary(BPRS)
+# plot
+ggplot(BPRS, aes(x = week, y = bprs, linetype = subject, colour = subject)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(BPRS$bprs), max(BPRS$bprs)))
+
+
+```
+
+
+From the plot above, we can see that the BPRS score of almost all men who participated decreased over the eight weeks of the study. Men who had higher values of BPRS in the beginning tend to have higher values throughout the study. The substantial individual differences and variability appear to decrease with time.
+
+#### 6.2.1 Multiple regression
+
+Ignoring the repeated-measures structure of the data, we will fit a multiple linear regression model with bprs as response and `week` and `treatment` as explanatory variables.
+
+```{r}
+# create a regression model 
+BPRS_regression_model <- lm(bprs ~ week + treatment, data = BPRS)
+
+# print out a summary of the model
+summary(BPRS_regression_model)
+```
+From the output above, we can see that men in treatment group 2 do not show significantly different results from men in treatment group 1. However, there is a negative correlation with week (estimate: -2.2, p < 0.001), showing that the treatments generally improved (= decreased) the BPRS score of the participants. 
+
+#### 6.2.2 The Random Intercept Model
+
+The previous model assumes independence of the repeated measures of bprs, and this assumption is highly unlikely. So, now we will move on to consider both some more appropriate graphics and appropriate models. We will first fit the *random intercept model* for the same two explanatory variables: `Week` and `Treatment`. Fitting a random intercept model allows the linear regression fit for each male to differ in *intercept* from other males.
+
+```{r}
+# Create a random intercept model
+BPRS_intercept_model <- lmerTest::lmer(bprs ~ week + treatment + (1 | subject), data = BPRS, REML = FALSE)
+# Print the summary of the model
+summary(BPRS_intercept_model)
+
+```
+
+#### 6.2.3 Random Intercept and Random Slope Model
+
+Now we can move on to fit the *random intercept and random slope model* to the bprs data. Fitting a random intercept and random slope model allows the linear regression fits for each individual to differ in intercept but also in slope. This way it is possible to account for the individual differences in the mens bprs profile, but also the effect of time (weeks).
+
+```{r}
+# create a random intercept and random slope model
+BPRS_intercept_slope_model <- lmerTest::lmer(bprs ~ week + treatment + (week | subject), data = BPRS, REML = FALSE)
+# print a summary of the model
+summary(BPRS_intercept_slope_model)
+# perform an ANOVA test on the two models
+anova(BPRS_intercept_model, BPRS_intercept_slope_model)
+```
+
+Comparing the two models with ANOVA, we can see that the model including the slope is representing the data slightly better than the one without the slope: it's AIC is 2745.4 compared to 2748.7. However, the BIS of the first model is lower for the intercept model. We will keep trying to find the best model. 
+
+#### 6.2.4 Random Intercept and Random Slope Model with interaction
+
+We can fit a random intercept and slope model that allows for a week × treatment interaction.
+
+```{r}
+# create a random intercept and random slope model with the interaction
+BPRS_intercept_slope_interaction_model <- lmerTest::lmer(bprs ~ week * treatment + (week | subject), data = BPRS, REML = FALSE)
+# print a summary of the model
+summary(BPRS_intercept_slope_interaction_model)
+# perform an ANOVA test on the two models
+anova(BPRS_intercept_slope_model, BPRS_intercept_slope_interaction_model) 
+```
+
+The intercept slope interaction model has a slightly lower AIC of 2744.3, but the differences between the last two models are not significant (p > 0.05). Since the results of the different models do not differ greatly from one another, the random intercept slope model appears to be the best choice. It takes into account the fact that the measures of bprs are not independent and accounts for the effect of time (weeks).
+
+

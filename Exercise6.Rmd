@@ -1,0 +1,789 @@
+---
+title: "**Introduction to Open Data Science, Exercise Set 6**"
+
+subtitle: "**Analysis of longitudinal data**"
+
+output: 
+  html_document:
+    theme: flatly
+    highlight: haddock
+    toc: true
+    toc_depth: 2
+    number_section: false
+---
+
+
+This set consists of a few numbered exercises.
+Go to each exercise in turn and do as follows:
+
+1. Read the brief description of the exercise.
+2. Run the (possible) pre-exercise-code chunk.
+3. Follow the instructions to fix the R code!
+
+## 6.0 INSTALL THE REQUIRED PACKAGES FIRST!
+
+One or more extra packages (in addition to `tidyverse`) will be needed below.
+
+```{r}
+# Select (with mouse or arrow keys) the install.packages("...") and
+# run it (by Ctrl+Enter / Cmd+Enter):
+
+# install.packages("lme4")
+```
+
+
+## 6.1 Meet and Repeat: PART I
+
+Many studies in the behavioral sciences involve several measurement or observations of the response variable of interest on each subject in the study. For example, the response variable may be measured under a number of different experimental conditions or on a number of different occasions over time; such data are labelled repeated measures or *longitudinal data*. In the first part (I) of these exercises useful methods for the graphical exploration of this type of data are described and a simple method for their analysis are introduced, with the warning that although simple the method should be used only in the initial stage of dealing with the data; more appropriate methods will be discussed in part II.
+
+In the first part we will dwelve in to the BPRS data, in which 40 male subjects were randomly assigned to one of two treatment groups and each subject was rated on the brief psychiatric rating scale (BPRS) measured before treatment began (week 0) and then at weekly intervals for eight weeks. The BPRS assesses the level of 18 symptom constructs such as hostility, suspiciousness, hallucinations and grandiosity; each of these is rated from one (not present) to seven (extremely severe). The scale is used to evaluate patients suspected of having schizophrenia.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+# (no pre-code in this exercise!)
+```
+
+### Instructions
+- Read the `BPRS` data into memory
+- Print out the (column) names of the data
+- Look at the structure of the data
+- Print out summaries of the variables in the data
+- Pay special attention to the structure of the data
+
+Hints:
+- Use `str()` to see structure
+- Use `summary()` to compute summaries
+
+### R code
+```{r}
+# This is a code chunk in RStudio editor.
+
+# Read the BPRS data
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep =" ", header = T)
+
+# Look at the (column) names of BPRS
+names(BPRS)
+
+# Look at the structure of BPRS
+str(BPRS)
+
+
+# Print out summaries of the variables
+summary(BPRS)
+
+
+```
+
+
+## 6.2 Graphical displays of longitudinal data: The magical pivot_longer()
+
+To be able to study the possible differences in the bprs value between the treatment groups and the possible change of the value in time, we don't want the weeks to be individual variables. The `pivot_longer()` function is used to transform the dataset accordingly.
+
+The `pivot_longer()` function takes multiple columns and collapses them into key-value pairs, so that we can have the weeks as values of a new variable week. You can find more information about pivot_longer in the package documentation with `?pivot_longer` or in the dplyr cheatsheet.
+
+Our `weeks` are in a bit inconvenient form as characters, so we somehow need to extract the week numbers from the character vector `weeks`.
+
+With the `substr()` function we can extract a part of longer character object. We simply supply it with a character object or vector, *start position*, as in the position of the first letter to extract, and *stop position*, as in the position of the last letter to extract. For example `substr("Hello world!", 1, 5)` would return "Hello".
+
+The `arrange()` function is also used for information purposes although it is not necessary for the analyses: it simply allows the final table to be ordered according to a variable (e.g. Time or week number to respect the chronology).
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+```
+
+### Instructions
+- Factor variables treatment and subject
+- Use `pivot_longer()` to convert BPRS to a long form
+- Use `mutate()` and `substr()` to create column `week` by extracting the week number from column `weeks`
+- Glimpse the data using `glimpse()`
+
+Hints:
+- Use `pivot_longer()` to convert the data to a long form (the cols arguments ask for the variables to be kept *i.e.* not pivoted) 
+- Use `mutate()` and `substr()` to create `week`
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# The data BPRS is available
+
+# Access the packages dplyr and tidyr
+library(dplyr)
+library(tidyr)
+
+# Factor treatment & subject
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+
+# Convert to long form
+BPRSL <-  pivot_longer(BPRS, cols = -c(treatment, subject),
+                       names_to = "weeks", values_to = "bprs") %>%
+          arrange(weeks) #order by weeks variable
+
+# Extract the week number
+BPRSL <-  BPRSL %>% 
+            mutate(week = as.integer(substr(weeks, 5, 5)))
+
+# Take a glimpse at the BPRSL data
+glimpse(BPRSL)
+
+```
+
+
+## 6.3 Individuals on the plot
+
+Graphical displays of data are almost always useful for exposing patterns in the data, particularly when these are unexpected; this might be of great help in suggesting which class of models might be most sensibly applied in the later more formal analysis.
+
+To begin we shall plot the BPRS values for all 40 men, differentiating between the treatment groups into which the men have been randomized. This simple graph makes a number of features of the data readily apparent.
+
+REMEMBER: In `ggplot2` or `dplyr` syntax, you generally do not need to "quote" variable names!
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr)
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL <-  pivot_longer(BPRS, cols=-c(treatment,subject),names_to = "weeks",values_to = "bprs") %>% arrange(weeks)
+BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks,5,5)))
+rm(BPRS)
+```
+
+### Instructions
+- Draw the plot with `week` on the x-axis and `bprs` on the y-axis
+- Inspect the plot. See how both the BPRS-score and the variability between individuals decrease over the eight weeks time
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# BPRSL is available
+
+#Access the package ggplot2
+library(ggplot2)
+
+# Draw the plot
+ggplot(BPRSL, aes(x = week, y = bprs, linetype = subject)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))
+
+```
+
+
+## 6.4 The Golden Standardise
+
+An important effect we want to take notice is how the men who have higher BPRS values at the beginning tend to have higher values throughout the study. This phenomenon is generally referred to as tracking.
+
+The tracking phenomenon can be seen more clearly in a plot of the standardized values of each
+observation, i.e., the values obtained by subtracting the relevant occasion mean from the original observation and then dividing by the corresponding visit standard deviation.
+
+$$standardised(x) = \frac{x - mean(x)}{ sd(x)}$$
+
+REMEMBER: In `ggplot2` or `dplyr` syntax, you generally do not need to "quote" variable names!
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr); library(ggplot2)
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL <-  pivot_longer(BPRS, cols=-c(treatment,subject),names_to = "weeks",values_to = "bprs") %>% arrange(weeks)
+BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks,5,5)))
+rm(BPRS)
+```
+
+### Instructions
+- Assign `week` as the grouping variable
+- Standardise the variable `bprs`
+- Glimpse the data now with the standardised `brps`
+- Plot the data now with the standardised `brps`
+
+Hint:
+- Standardise the `bprs` by grouping variable `week`
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# BPRSL is available
+
+library(dplyr)
+library(tidyr)
+# Standardise the variable bprs
+BPRSL <- BPRSL %>%
+  group_by(week) %>%
+  mutate(stdbprs = (bprs - mean(bprs))/sd(bprs)) %>% 
+  ungroup()
+
+# Glimpse the data
+glimpse(BPRSL)
+
+# Plot again with the standardised bprs
+library(ggplot2)
+ggplot(BPRSL, aes(x = week, y = stdbprs, linetype = subject)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  scale_y_continuous(name = "standardized bprs")
+
+```
+
+
+## 6.5 Good things come in Summary graphs
+
+With large numbers of observations, graphical displays of individual response profiles are of little use and investigators then commonly produce graphs showing average (mean) profiles for each treatment group along with some indication of the variation of the observations at each time point, in this case the standard error of mean
+
+$$se = \frac{sd(x)}{\sqrt{n}}$$
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr); library(ggplot2)
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL <-  pivot_longer(BPRS, cols=-c(treatment,subject),names_to = "weeks",values_to = "bprs") %>% arrange(weeks)
+BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks,5,5)))
+rm(BPRS)
+BPRSL <- BPRSL %>%
+  group_by(week) %>%
+  mutate( stdbprs = (bprs - mean(bprs))/sd(bprs) ) %>%
+  ungroup()
+```
+
+### Instructions
+- Create the summary data `BPRSS` with the mean and standard error of the variable `bprs`
+- Glimpse the data
+- Plot the mean profiles (with `geom_errorbar()` line commented out)
+- Uncomment the `geom_errorbar()` line and plot the mean profiles again
+- Note the considerable overlap in the mean profiles of the two treatment groups suggesting there might be little difference between the two groups in respect to the mean BPRS values
+
+Hint:
+- Calculate the summary variables `mean` and `se` inside the `summarise()` function
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# BPRSL is available
+
+# Number of subjects (per group):
+n <- 20
+
+library(dplyr)
+library(tidyr)
+# Summary data with mean and standard error of bprs by treatment and week 
+BPRSS <- BPRSL %>%
+  group_by(treatment, week) %>%
+  summarise(mean = mean(bprs, na.rm = TRUE), 
+            se   = (sd(bprs)/sqrt(n))) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(BPRSS)
+
+# Plot the mean profiles
+library(ggplot2)
+ggplot(BPRSS, aes(x = week, y = mean, linetype = treatment, shape = treatment, colour = treatment)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.8,0.8)) +
+  scale_y_continuous(name = "mean(bprs) +/- se(bprs)")
+
+```
+
+
+## 6.6 Find the outlaw... Outlier!
+
+As an example of the summary measure approach we will look into the post treatment values of the BPRS. The mean of weeks 1 to 8 will be our summary measure. First calculate this measure and then look at boxplots of the measure for each treatment group. See how the mean summary measure is more variable in the second treatment group and its distribution in this group is somewhat skew. The boxplot of the second group also reveals an outlier, a subject whose mean BPRS score of the eight weeks is over 70. It might bias the conclusions from further comparisons of the groups, so we shall remove that subject from the data. Without the outlier, try to figure which treatment group might have the lower the eight-week mean. Think, considering the variation, how can we be sure?
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr); library(ggplot2)
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL <-  pivot_longer(BPRS, cols=-c(treatment,subject),names_to = "weeks",values_to = "bprs") %>% arrange(weeks)
+BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks,5,5)))
+rm(BPRS)
+BPRSL <- BPRSL %>%
+  group_by(week) %>%
+  mutate( stdbprs = (bprs - mean(bprs))/sd(bprs) ) %>%
+  ungroup()
+```
+
+### Instructions
+- Create the summary data BPRSL8S
+- Glimpse the data
+- Draw the boxplot and observe the outlier
+- Find a suitable threshold value and use `filter()` to exclude the outlier to form a new data BPRSL8S1
+- Glimpse and draw a boxplot of the new data to check the outlier has been dealt with
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# BPRSL is available
+
+library(dplyr)
+library(tidyr)
+# Create a summary data by treatment and subject with mean as the summary variable (ignoring baseline week 0)
+BPRSL8S <- BPRSL %>%
+  filter(week > 0) %>%
+  group_by(treatment, subject) %>%
+  summarise( mean=mean(bprs) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(BPRSL8S)
+
+# Draw a boxplot of the mean versus treatment
+library(ggplot2)
+ggplot(BPRSL8S, aes(x = treatment, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(bprs), weeks 1-8")
+
+# Create a new data by filtering the outlier and adjust the ggplot code the draw the plot again with the new data
+BPRSL8S1 <- "change me!"
+
+```
+
+
+## 6.7 T for test and A for Anova
+
+Although the informal graphical material presented up to now has all indicated a lack of difference in the two treatment groups, most investigators would still require a formal test for a difference. Consequently we shall now apply a t-test to assess any difference between the treatment groups, and also calculate a confidence interval for this difference. We use the data without the outlier created in the previous exercise. The t-test confirms the lack of any evidence for a group difference. Also the 95% confidence interval is wide and includes the zero, allowing for similar conclusions to be made.
+
+Baseline measurements of the outcome variable in a longitudinal study are often correlated with the chosen summary measure and using such measures in the analysis can often lead to substantial gains in precision when used appropriately as a covariate in an analysis of covariance. We can illustrate the analysis on the data using the BPRS value corresponding to time zero taken prior to the start of treatment as the baseline covariate. We see that the baseline BPRS is strongly related to the BPRS values taken after treatment has begun, but there is still no evidence of a treatment difference even after conditioning on the baseline value.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr)
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+BPRSL <-  pivot_longer(BPRS, cols=-c(treatment,subject),names_to = "weeks",values_to = "bprs") %>% arrange(weeks)
+BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks,5,5)))
+BPRSL <- BPRSL %>%
+  group_by(week) %>%
+  mutate( stdbprs = (bprs - mean(bprs))/sd(bprs) ) %>%
+  ungroup()
+BPRSL8S <- BPRSL %>%
+  filter(week > 0) %>%
+  group_by(treatment, subject) %>%
+  summarise( mean=mean(bprs) ) %>%
+  ungroup()
+rm(BPRSL)
+BPRSL8S1 <- BPRSL8S %>%
+  filter(mean < 60)
+```
+
+### Instructions
+- Perform a two-sample t-test and observe the differences as seen in in the boxplots of the previous exercise
+- Add the baseline from the original data as a new variable to the summary data
+- Fit the linear model with `mean` as the target and `baseline` + `treatment` as the response from the `BPRSL8S1` (Remember the `lm()` formula `y` ~ `x1` + `x2`)
+- Compute the analysis of variance table for the fitted model and pay close attention to the significance of `baseline`
+
+Hints:
+- Perform the t-test
+- Fit the linear model
+- Compute `anova()`
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# BPRSL8S & BPRSL8S1 datasets are available
+
+# Perform a two-sample t-test
+t.test(mean ~ treatment, data = BPRSL8S1, var.equal = TRUE)
+
+library(dplyr)
+library(tidyr)
+# Add the baseline from the original data as a new variable to the summary data
+BPRSL8S2 <- BPRSL8S %>%
+  mutate(baseline = BPRS$week0)
+
+# Fit the linear model with the mean as the response 
+fit <- lm("Linear model formula here!", data = BPRSL8S2)
+
+# Compute the analysis of variance table for the fitted model with anova()
+
+
+```
+
+
+## 6.8 Meet and Repeat: PART II
+
+Longitudinal data, where a response variable is measured on each subject on several different occasions poses problems for their analysis because the repeated measurements on each subject are very likely to be correlated rather than independent. In PART II of these exercises methods for dealing with longitudinal data which aim to account for the correlated nature of the data and where the response is assumed to be normally distributed are discussed.
+
+To investigate the use of linear mixed effects models in practice, we shall use data from a nutrition study conducted in three groups of rats. The groups were put on different diets, and each animal’s body weight (grams) was recorded repeatedly (approximately) weekly, except in week seven when two recordings were taken) over a 9-week period. The question of most interest is whether the growth profiles of the three groups differ.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr)
+```
+
+### Instructions
+- Read the `RATS` data into memory
+- Factor variables `ID` and `group`
+- Glimpse the data
+
+Hints:
+- Factor variables `ID` and `group` with `factor()`
+- Glimpse the data with `glimpse()`
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+
+# read in the RATS data
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+
+library(dplyr)
+# Factor variables ID and Group
+
+# Glimpse the data
+
+```
+
+
+## 6.9 Linear Mixed Effects Models
+
+Again, to be able to study the differences between the variables of interest, that is the weight of the individual rats, and the groups as well as the change of the weight in time, we want to *pivot* the data to a long form.
+
+This time we need to extract the number of days as an integer variable.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+```
+
+### Instructions
+- Assign `names_to` as `WD` and `values_to` as `Weight` and convert the data to a long form
+- Mutate a new variable `Time` by extracting the number of the day from `WD`
+- `glimpse()` the data
+
+Hints:
+- Assign `names_to` as `WD` and `values_to` as `Weight`
+- Use `substr()` to extract the number of the day. Check what is the maximum number of digits in the numbers after `WD`.
+- `glimpse()` the data
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# RATS is available
+
+library(dplyr)
+library(tidyr)
+# Convert data to long form
+RATSL <- pivot_longer(RATS, cols = -c(ID, Group), 
+                      names_to = "change me!",
+                      values_to = "change me!") %>% 
+         mutate(Time = as.integer(substr("change me!"))) %>%
+         arrange(Time)
+
+# Glimpse the data
+glimpse(RATSL)
+
+```
+
+
+## 6.10 Plot first, ask questions later
+
+To begin, we shall ignore the repeated-measures structure of the data and assume that all the observations are independent of one another. Now if we simply ignore that the sets of 11 weights come from the same rat, we have a data set consisting of 176 weights, times, and group memberships that we see can easily be analyzed using multiple linear regression. To begin, we will plot the data, identifying the observations in each group but ignoring the longitudinal nature of the data.
+
+We'll start with a simple plot and continue by adding some styling elements. Feel free to experiment!
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr); library(ggplot2)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL <- pivot_longer(RATS, cols=-c(ID,Group), names_to = "WD",values_to = "Weight")  %>%  mutate(Time = as.integer(substr(WD,3,4))) %>% arrange(Time)
+```
+
+### Instructions
+- Check the dimensions of RATSL
+- Draw the `Weight` against `Time` plot
+- Add line type aesthetics to differentiate the rat groups by assigning `aes(linetype = Group)` as an argument to `geom_line()`
+- Add x-axis label and breaks by adding `scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 10))` to the plot.
+- Add y-axis label by adding `scale_y_continuous(name = "Weight (grams)")`
+- Change the position of the legend by adding `theme(legend.position = "top")`.
+- Observe the difference between the weights of the rats in Group 1 and those in the other two groups
+
+Hints:
+- Use `dim()` to check the dimensions
+- Draw the plot with the designated style elements. To add a new style element add `+`to the end of the previous line and add the new element on a new indented line.
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# RATSL is available
+
+library(dplyr)
+library(tidyr)
+# Check the dimensions of the data
+
+
+# Plot the RATSL data
+library(ggplot2)
+ggplot(RATSL, aes(x = Time, y = Weight, group = ID)) +
+  geom_line()
+
+
+
+
+```
+
+
+## 6.11 Holding on to independence: The Linear model
+
+Continuing to ignore the repeated-measures structure of the data, we will fit a multiple linear regression model with weight as response and `Time` and `Group` as explanatory variables.
+
+Recall again from *Multiple regression* exercises that this is done by defining explanatory variables with the `formula` argument of `lm()`, as below
+
+```
+y ~ x1 + x2 + ..
+```
+Here `y` is again the target variable and `x1, x2, ..` are the explanatory variables.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL <- pivot_longer(RATS, cols=-c(ID,Group), names_to = "WD",values_to = "Weight")  %>%  mutate(Time = as.integer(substr(WD,3,4))) %>% arrange(Time) 
+```
+
+### Instructions
+- Create a regression model with `Weight` as the response variable and `Time` and `Group` as explanatory variables
+- Print out the summary of the model
+- Observe 1) How Group2 and Group3 differ from Group1
+conditional on `Time` and 2) The significance of the regression on `Time`
+
+Hints:
+- Use `lm()` with the formula `Weight ~ Time + Group`
+- Use `summary()` to print the summary of the model
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# RATS and RATSL are available
+
+# create a regression model RATS_reg
+RATS_reg <- lm(Weight ~ Time + Group, data = RATSL)
+
+# print out a summary of the model
+summary(RATS_reg)
+```
+
+
+## 6.12 The Random Intercept Model
+
+The previous model assumes independence of the repeated measures of weight, and this assumption is highly unlikely. So, now we will move on to consider both some more appropriate graphics and appropriate models.
+
+To begin the more formal analysis of the rat growth data, we will first fit the *random intercept model* for the same two explanatory variables: `Time` and `Group`. Fitting a random intercept model allows the linear regression fit for each rat to differ in *intercept* from other rats.
+
+We will use the `lme4` package which offers efficient tools for fitting linear and generalized linear mixed-effects models. The first argument is the `formula` object describing both the fixed-effects and random effects part of the model, with the response on the left of a ~ operator and the terms, separated by + operators, on the right. Note the random-effects terms distinguished by vertical bars (|).
+
+**Note:** You should first install the package `lme4`.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL <- pivot_longer(RATS, cols=-c(ID,Group), names_to = "WD",values_to = "Weight")  %>%  mutate(Time = as.integer(substr(WD,3,4))) %>% arrange(Time)
+```
+
+### Instructions
+- Access the `lme4` package
+- Fit the random intercept model with the rat `ID` as the random effect
+- Print out the summary of the model
+- Pay attention to variability (standard deviation) of the rat `ID`
+
+Hints:
+- Fit the random intercept model with the rat `ID` as the random effect
+- Print out the summary of the model with `summary()`
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# RATS and RATSL are available
+
+# access library lme4
+library(lme4)
+
+# Create a random intercept model
+RATS_ref <- lmer(Weight ~ Time + Group + (1 | ID), data = RATSL, REML = FALSE)
+
+# Print the summary of the model
+
+
+```
+
+
+## 6.13 Slippery slopes: Random Intercept and Random Slope Model
+
+Now we can move on to fit the *random intercept and random slope model* to the rat growth data. Fitting a random intercept and random slope model allows the linear regression fits for each individual to differ in intercept but also in slope. This way it is possible to account for the individual differences in the rats' growth profiles, but also the effect of time.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr); library(lme4); library(ggplot2)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL <- pivot_longer(RATS, cols=-c(ID,Group), names_to = "WD",values_to = "Weight")  %>%  mutate(Time = as.integer(substr(WD,3,4))) %>% arrange(Time)
+RATS_ref <- lmer(Weight ~ Time + Group + (1 | ID), data = RATSL, REML = FALSE)
+```
+
+### Instructions
+- Fit the random intercept and slope model with `Time` and `ID` as the random effects
+- Print the summary of the model
+- Compute the analysis of variance tables of the models `RATS_ref` and `RATS_ref1`
+- Pay attention to the chi-squared statistics and p-value of the likelihood ratio test between `RATS_ref1` and `RATS_ref`. The lower the value the better the fit against the comparison model.
+
+Hints:
+- Print the summary of the model with `summary()`
+- Compute the analysis of variance tables of the models `RATS_ref1` and `RATS_ref` with `anova()`
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# RATS and RATSL are available
+
+# create a random intercept and random slope model
+library(lme4)
+RATS_ref1 <- lmer(Weight ~ Time + Group + (Time | ID), data = RATSL, REML = FALSE)
+
+# print a summary of the model
+install.packages("performance")
+
+# perform an ANOVA test on the two models
+anova(RATS_ref1, RATS_ref, RATS_reg)
+
+```
+
+
+## 6.14 Time to interact: Random Intercept and Random Slope Model with interaction
+
+Finally, we can fit a random intercept and slope model that allows for a group × time interaction.
+
+```{r, echo=FALSE}
+# Pre-exercise-code (Run this code chunk first! Do NOT edit it.)
+
+# Click the green arrow ("Run Current Chunk") in the upper-right corner of this chunk. This will initialize the R objects needed in the exercise. Then move to Instructions of the exercise to start working.
+
+library(dplyr); library(tidyr); library(lme4); library(ggplot2)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+RATSL <- pivot_longer(RATS, cols=-c(ID,Group), names_to = "WD",values_to = "Weight")  %>%  mutate(Time = as.integer(substr(WD,3,4))) %>% arrange(Time)
+RATS_ref <- lmer(Weight ~ Time + Group + (1 | ID), data = RATSL, REML = FALSE)
+RATS_ref1 <- lmer(Weight ~ Time + Group + (Time | ID), data = RATSL, REML = FALSE)
+```
+
+### Instructions
+- Write the same model as in the previous exercise but add `Time` * `Group` interaction.
+- Print out the summary of the model
+- Compute the analysis of variance tables of the models `RATS_ref2` and `RATS_ref1`
+- Again pay attention to the likelihood ratio test chi-squared value and the according p-value. The lower the value the better the fit against the comparison model.
+- Draw the plot of *observed* values of RATSL (this is the same plot drawn earlier)
+- Create a vector of the fitted values of the model using the function `fitted()`
+- Use for example `mutate()` to add the vector `Fitted` as a new column to RATSL
+- Draw the plot of *fitted* values of RATSL
+
+Hints:
+- Print the summary of the model with `summary()`
+- Compute the analysis of variance tables of the models `RATS_ref1` and `RATS_ref` with `anova()`
+- Create a vector of the fitted values of the model using the function `fitted()`. Supply it with the model `RATS_ref2`
+- Use `mutate()` to add the vector `Fitted` as a new column to RATSL.
+
+### R code
+```{r}
+# Work with the exercise in this chunk, step-by-step. Fix the R code!
+# RATS and RATSL are available
+
+# create a random intercept and random slope model with the interaction
+library(lme4)
+RATS_ref2 <- lmer(Weight ~ Time * Group + (Time | ID), data = RATSL, REML = FALSE)
+# print a summary of the model
+summary(RATS_ref2)
+
+# perform an ANOVA test on the two models
+anova(RATS_ref2, RATS_ref1)
+
+# draw the plot of RATSL with the observed Weight values
+ggplot(RATSL, aes(x = Time, y = Weight, group = ID)) +
+  geom_line(aes(linetype = Group)) +
+  scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 20)) +
+  scale_y_continuous(name = "Observed weight (grams)") +
+  theme(legend.position = "top")
+
+# Create a vector of the fitted values
+Fitted <- fitted(RATS_ref2)
+
+library(dplyr)
+library(tidyr)
+# Create a new column fitted to RATSL
+RATSL <- RATSL %>%
+  mutate(Fitted = Fitted)
+
+# draw the plot of RATSL with the Fitted values of weight
+library(ggplot2)
+ggplot(RATSL, aes(x = Time, y = Fitted, group = ID)) +
+  geom_line(aes(linetype = Group)) +
+  scale_x_continuous(name = "Time (days)", breaks = seq(0, 60, 20)) +
+  scale_y_continuous(name = "Fitted weight (grams)") +
+  theme(legend.position = "top")
+
+
+```
+
+**Very well done!!!**
